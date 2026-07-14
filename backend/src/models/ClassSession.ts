@@ -10,18 +10,28 @@ export interface IClassSession extends Document {
   startTime: Date;
   endTime: Date;
   topic?: string;
+  status: 'ZAKAZAN' | 'U_TOKU' | 'ZAVRSEN' | 'OTKAZAN';
+  meetingLink?: string;
+  recurringGroupId?: string;
 }
 
 const ClassSessionSchema: Schema = new Schema({
   courseName: { type: String, enum: ['OSNOVNI', 'SREDNJI', 'NAPREDNI'] },
-  profesorId: { type: Schema.Types.ObjectId, ref: 'User' },
+  profesorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   students: [{ 
     studentId: { type: Schema.Types.ObjectId, ref: 'User' },
     attended: { type: Boolean, default: false }
   }],
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
-  topic: { type: String }
+  topic: { type: String },
+  status: { 
+    type: String, 
+    enum: ['ZAKAZAN', 'U_TOKU', 'ZAVRSEN', 'OTKAZAN'],
+    default: 'ZAKAZAN'
+  },
+  meetingLink: { type: String },
+  recurringGroupId: { type: String }
 }, { timestamps: true });
 
 // Indeks za brze pretrage termina (npr. Cron job za obaveštavanje 1h pred čas)
