@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useGetScheduleQuery, useCreateClassMutation, useCompleteClassMutation, useCancelClassMutation, useGetUsersQuery, useUpdateClassMutation, useDeleteClassMutation, useDeleteCompletedClassesMutation } from '../../store/apiSlice';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
