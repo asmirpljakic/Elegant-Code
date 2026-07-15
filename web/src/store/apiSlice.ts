@@ -33,7 +33,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['User', 'Users', 'ClassSession', 'Settings', 'Notifications'],
+  tagTypes: ['User', 'Users', 'ClassSession', 'Settings', 'Notifications', 'Certificates'],
   endpoints: (builder) => ({
     login: builder.mutation<{ token: string; user: any }, LoginFormData>({
       query: (credentials) => ({
@@ -174,6 +174,22 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Settings', 'ClassSession', 'Users'], // Invalida i druge stvari jer menja analytics
     }),
+    getMyCertificates: builder.query<any, void>({
+      query: () => '/certificates/my',
+      providesTags: ['Certificates'],
+    }),
+    getStudentCertificates: builder.query<any, string>({
+      query: (studentId) => `/certificates/${studentId}`,
+      providesTags: ['Certificates'],
+    }),
+    approveCertificate: builder.mutation<any, { studentId: string; courseName: string }>({
+      query: (data) => ({
+        url: '/certificates/approve',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Certificates'],
+    }),
   }),
 });
 
@@ -197,5 +213,8 @@ export const {
   useMarkAllNotificationsAsReadMutation,
   useGetSettingsQuery,
   useUpdateSettingsMutation,
-  useGetMeQuery
+  useGetMeQuery,
+  useGetMyCertificatesQuery,
+  useGetStudentCertificatesQuery,
+  useApproveCertificateMutation
 } = apiSlice;

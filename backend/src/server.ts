@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Učitavanje varijabli okruženja mora biti PRE ostalih import-a jer Node hoistuje importe
+dotenv.config();
+
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import scheduleRoutes from './routes/scheduleRoutes';
@@ -8,11 +12,9 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import settingsRoutes from './routes/settingsRoutes';
 import googleRoutes from './routes/googleRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import certificateRoutes from './routes/certificateRoutes';
 import { connectDB } from './config/db';
 import { startCronJobs } from './jobs/cronJobs';
-
-// Učitavanje varijabli okruženja (mora biti pre inicijalizacije servisa koji ih koriste)
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,8 +39,10 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/google', googleRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/certificates', certificateRoutes);
 
 app.get('/', (req, res) => {
+  // Trigerujemo nodemon
   res.send('Elegant Code API radi!');
 });
 

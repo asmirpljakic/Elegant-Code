@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { logout } from '../../store/authSlice';
-import { LayoutDashboard, Calendar, Users, LogOut, Code2, Settings, BarChart } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, LogOut, Code2, Settings, BarChart, Award, Video } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { NotificationDropdown } from '../ui/NotificationDropdown';
 
@@ -27,7 +27,19 @@ export default function MainLayout() {
       hidden: !['SUPER_ADMIN', 'ADMIN', 'PROFESOR'].includes(user?.role || '') 
     },
     { 
-      name: 'Statistika', 
+      name: 'Google Meet', 
+      path: '/dashboard/google-meet', 
+      icon: Video,
+      hidden: !['SUPER_ADMIN', 'ADMIN', 'PROFESOR'].includes(user?.role || '') 
+    },
+    { 
+      name: 'Moji Sertifikati', 
+      path: '/dashboard/certificates', 
+      icon: Award,
+      hidden: !['UCENIK', 'KLIJENT'].includes(user?.role || '') 
+    },
+    { 
+      name: 'Statistika',  
       path: '/dashboard/analytics', 
       icon: BarChart,
       hidden: !['SUPER_ADMIN', 'ADMIN'].includes(user?.role || '') 

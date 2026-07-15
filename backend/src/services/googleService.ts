@@ -1,46 +1,53 @@
 import { google } from 'googleapis';
 import { Settings } from '../models/Settings';
+import { User } from '../models/User';
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID || 'dummy_id',
-  process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
-  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5001/api/google/callback'
-);
+const getOAuth2Client = () => {
+  return new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID || 'dummy_id',
+    process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
+    process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5001/api/google/callback'
+  );
+};
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 
-export const getAuthUrl = () => {
+export const getAuthUrl = (userId: string) => {
+  const oauth2Client = getOAuth2Client();
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent', // Zahteva se consent svaki put da bismo dobili refresh_token
     scope: SCOPES,
+    state: userId, // Prosleđujemo userId kroz state
   });
 };
 
-export const handleCallback = async (code: string) => {
+export const handleCallback = async (code: string, userId: string) => {
+  const oauth2Client = getOAuth2Client();
   const { tokens } = await oauth2Client.getToken(code);
   
   if (tokens.refresh_token) {
-    let settings = await Settings.findOne();
-    if (!settings) {
-      settings = new Settings();
+    const user = await User.findById(userId);
+    if (user) {
+      user.googleRefreshToken = tokens.refresh_token;
+      await user.save();
     }
-    settings.googleRefreshToken = tokens.refresh_token;
-    await settings.save();
   }
   
   return tokens;
 };
 
-export const createMeetingLink = async (startTime: Date, endTime: Date, topic: string) => {
+export const createMeetingLink = async (startTime: Date, endTime: Date, topic: string, profesorId: string) => {
   try {
-    const settings = await Settings.findOne();
-    if (!settings || !settings.googleRefreshToken) {
-      throw new Error('Google integracija nije konfigurisana (nedostaje refresh token)');
+    const profesor = await User.findById(profesorId);
+    if (!profesor || !profesor.googleRefreshToken) {
+      throw new Error(`Google integracija nije konfigurisana za profesora ${profesor?.firstName} (nedostaje refresh token)`);
     }
 
-    // Postavi refresh token
-    oauth2Client.setCredentials({ refresh_token: settings.googleRefreshToken });
+    const oauth2Client = getOAuth2Client();
+
+    // Postavi refresh token profesora
+    oauth2Client.setCredentials({ refresh_token: profesor.googleRefreshToken });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 

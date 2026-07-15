@@ -22,7 +22,7 @@ export const checkAndGenerateMeetLinks = async () => {
 
     for (const cls of upcomingClasses) {
       console.log(`Pokušavam da generišem Meet link za čas: ${cls._id}`);
-      const link = await createMeetingLink(cls.startTime, cls.endTime, cls.topic || 'Čas - Elegant Code');
+      const link = await createMeetingLink(cls.startTime, cls.endTime, cls.topic || 'Čas - Elegant Code', cls.profesorId.toString());
       
       if (link) {
         cls.meetingLink = link;

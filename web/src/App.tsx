@@ -8,6 +8,8 @@ import UsersList from './pages/dashboard/UsersList';
 import Schedule from './pages/dashboard/Schedule';
 import Analytics from './pages/dashboard/Analytics';
 import Settings from './pages/dashboard/Settings';
+import Certificates from './pages/dashboard/Certificates';
+import GoogleMeet from './pages/dashboard/GoogleMeet';
 
 function App() {
   return (
@@ -40,6 +42,14 @@ function App() {
             } 
           />
           <Route 
+            path="google-meet" 
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
+                <GoogleMeet />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="analytics" 
             element={
               <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
@@ -52,6 +62,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
                 <Settings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="certificates" 
+            element={
+              <ProtectedRoute allowedRoles={['UCENIK', 'KLIJENT']}>
+                <Certificates />
               </ProtectedRoute>
             } 
           />

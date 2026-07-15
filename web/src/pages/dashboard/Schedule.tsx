@@ -344,18 +344,31 @@ export default function Schedule() {
 
           {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'PROFESOR') && (
             <Button onClick={() => {
+              // Izračunaj sledeći pun sat za podrazumevano vreme
+              const now = new Date();
+              const nextHour = new Date(now);
+              nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+              const nextTwoHours = new Date(nextHour);
+              nextTwoHours.setHours(nextHour.getHours() + 1);
+              
+              // Pretvori u lokalno vreme formata YYYY-MM-DDTHH:mm
+              const offset = now.getTimezoneOffset() * 60000;
+              const localNextHour = new Date(nextHour.getTime() - offset).toISOString().slice(0, 16);
+              const localNextTwoHours = new Date(nextTwoHours.getTime() - offset).toISOString().slice(0, 16);
+              const localDateOnly = new Date(now.getTime() - offset).toISOString().slice(0, 10);
+
               // Reset svih polja forme
               setCourseName('OSNOVNI');
               setProfesorId('');
-              setStartTime('');
-              setEndTime('');
+              setStartTime(localNextHour);
+              setEndTime(localNextTwoHours);
               setTopic('');
               setMeetingLink('');
               setSelectedStudents([]);
               setIsRecurring(false);
               setRecurringDays([]);
               setUntilDate('');
-              setRecurringStartDate('');
+              setRecurringStartDate(localDateOnly);
               setIsCreateModalOpen(true);
             }} className="flex items-center">
               <Plus className="w-5 h-5 mr-2" />
@@ -542,7 +555,7 @@ export default function Schedule() {
         </>
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden flex flex-col">
-          {/* Kalendar Header Navigacija */}
+          {/* Header Kalendara */}
           <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
             <button onClick={() => setSelectedDate(subDays(selectedDate, 7))} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors">
               <ChevronLeft className="w-5 h-5" />
@@ -558,14 +571,14 @@ export default function Schedule() {
           </div>
 
           {/* Kalendar Mreža (Grid) */}
-          <div className="relative overflow-y-auto h-[650px] bg-slate-950 p-2 md:p-4">
+          <div className="relative overflow-y-auto h-[650px] bg-slate-950 px-2 md:px-4 pb-4 rounded-b-3xl">
             <div className="relative min-w-[800px]">
               {/* Header sa imenima dana */}
-              <div className="flex pl-16 border-b border-slate-800 pb-2 pt-2 sticky top-0 bg-slate-950/95 backdrop-blur z-20 shadow-sm">
+              <div className="flex pl-16 border-b border-slate-800 h-16 sticky top-0 bg-slate-950/95 backdrop-blur z-20 shadow-sm items-center">
                 {weekDays.map((day, idx) => (
                   <div key={idx} className="flex-1 text-center">
-                    <p className="text-xs font-medium text-slate-400 capitalize">{format(day, 'EEE', { locale: srLatn })}</p>
-                    <p className={`text-lg font-bold ${isSameDay(day, new Date()) ? 'text-primary' : 'text-slate-300'}`}>
+                    <p className="text-xs font-medium text-slate-400 capitalize mb-0.5">{format(day, 'EEE', { locale: srLatn })}</p>
+                    <p className={`text-base font-bold leading-none ${isSameDay(day, new Date()) ? 'text-primary' : 'text-slate-300'}`}>
                       {format(day, 'd')}
                     </p>
                   </div>
@@ -574,7 +587,7 @@ export default function Schedule() {
               
               {/* Pozadinske linije za sate */}
               {HOURS.map((hour, i) => (
-                <div key={hour} className={`flex border-b border-slate-800/50 h-20 relative ${i === 0 ? 'mt-4' : ''}`}>
+                <div key={hour} className={`flex border-b border-slate-800/50 h-20 relative ${i === 0 ? 'mt-6' : ''}`}>
                   <div className="w-16 flex-shrink-0 text-right pr-4 text-xs font-medium text-slate-500 -mt-2">
                     {hour.toString().padStart(2, '0')}:00
                   </div>
@@ -600,12 +613,12 @@ export default function Schedule() {
 
                 if (startHour < 8 || startHour >= 23) return null;
 
-                const topPosition = (startHour - 8) * 80 + (startMin / 60) * 80 + 64; // +64px zbog header-a sa danima
+                // 64px header + 24px margina (mt-6) na prvoj liniji = 88px
+                const topPosition = (startHour - 8) * 80 + (startMin / 60) * 80 + 88; 
                 const height = (durationMinutes / 60) * 80;
                 
-                // Izračunaj left i width na osnovu broja dana
-                const leftPercent = (dayIndex / 7) * 100;
-                const widthPercent = 100 / 7;
+                // Izračunaj left i width u odnosu na tačno dostupni prostor za dane (cela širina minus 4rem leva margina)
+                const leftRatio = dayIndex / 7;
 
                 return (
                   <div 
@@ -614,8 +627,8 @@ export default function Schedule() {
                     style={{ 
                       top: `${topPosition}px`, 
                       height: `${height}px`,
-                      left: `calc(4rem + ${leftPercent}% + 4px)`, // 4rem je 16 tildes (w-16) + padding
-                      width: `calc(${widthPercent}% - 8px)`,
+                      left: `calc(4rem + (100% - 4rem) * ${leftRatio} + 4px)`, // Tačno pozicioniranje u kolonu
+                      width: `calc((100% - 4rem) / 7 - 8px)`, // Tačna širina kolone minus padding
                       backgroundColor: cls.status === 'ZAVRSEN' ? 'rgba(30, 41, 59, 0.9)' : 'rgba(16, 185, 129, 0.1)',
                       backdropFilter: 'blur(4px)',
                       zIndex: 10
@@ -626,25 +639,23 @@ export default function Schedule() {
                       }
                     }}
                   >
-                    <div className="p-3">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-sm font-bold text-white truncate">{cls.topic || cls.courseName}</span>
-                        <span className="text-xs font-medium text-slate-400 bg-slate-900/50 px-2 py-0.5 rounded-md">
-                          {format(startDate, 'HH:mm')} - {format(endDate, 'HH:mm')}
+                    <div className="p-3 flex flex-col h-full items-center justify-center text-center">
+                      <div className="mb-2 w-full">
+                        <span className="text-xs font-bold text-slate-200 bg-slate-900/60 px-2 py-1 rounded-md border border-slate-700/50 shadow-sm inline-flex items-center justify-center w-fit">
+                          <span className="mr-1">🕒</span> {format(startDate, 'HH:mm')} - {format(endDate, 'HH:mm')}
                         </span>
                       </div>
                       
-                      <p className="text-xs text-slate-300 truncate">
-                        <UserIcon className="w-3 h-3 inline mr-1 opacity-70" />
-                        Profesor: {cls.profesorId?.firstName} {cls.profesorId?.lastName}
-                      </p>
-                      
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {cls.students?.map((s: any) => (
-                          <span key={s.studentId?._id} className="text-[10px] bg-slate-900/50 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700/50 truncate max-w-[80px]">
-                            {s.studentId?.firstName}
-                          </span>
-                        ))}
+                      <div className="flex flex-col gap-1 w-full items-center">
+                        {cls.students && cls.students.length > 0 ? (
+                          cls.students.map((s: any) => (
+                            <p key={s.studentId?._id} className="text-base font-bold text-white truncate w-full px-1">
+                              {s.studentId?.firstName} {s.studentId?.lastName}
+                            </p>
+                          ))
+                        ) : (
+                          <p className="text-xs font-medium text-slate-400 italic">Slobodan termin</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -758,10 +769,21 @@ export default function Schedule() {
                                   <input 
                                     type="time" 
                                     value={rd.startTime} 
+                                    step="3600"
                                     onChange={(e) => {
-                                      setRecurringDays(recurringDays.map(d => 
-                                        d.dayOfWeek === rd.dayOfWeek ? { ...d, startTime: e.target.value } : d
-                                      ));
+                                      const newStart = e.target.value;
+                                      setRecurringDays(recurringDays.map(d => {
+                                        if (d.dayOfWeek === rd.dayOfWeek) {
+                                          let newEnd = d.endTime;
+                                          if (newStart) {
+                                            const [h, m] = newStart.split(':').map(Number);
+                                            const endH = (h + 1) % 24;
+                                            newEnd = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                                          }
+                                          return { ...d, startTime: newStart, endTime: newEnd };
+                                        }
+                                        return d;
+                                      }));
                                     }}
                                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-primary outline-none"
                                     required
@@ -772,6 +794,7 @@ export default function Schedule() {
                                   <input 
                                     type="time" 
                                     value={rd.endTime} 
+                                    step="3600"
                                     onChange={(e) => {
                                       setRecurringDays(recurringDays.map(d => 
                                         d.dayOfWeek === rd.dayOfWeek ? { ...d, endTime: e.target.value } : d
@@ -818,7 +841,20 @@ export default function Schedule() {
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">Početak (Datum i Vreme)</label>
                     <input 
-                      type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} required={!isRecurring}
+                      type="datetime-local" 
+                      value={startTime} 
+                      onChange={(e) => {
+                        const newStart = e.target.value;
+                        setStartTime(newStart);
+                        if (newStart) {
+                          const startDate = new Date(newStart);
+                          startDate.setHours(startDate.getHours() + 1);
+                          const offset = startDate.getTimezoneOffset() * 60000;
+                          setEndTime(new Date(startDate.getTime() - offset).toISOString().slice(0, 16));
+                        }
+                      }} 
+                      required={!isRecurring}
+                      step="3600"
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary outline-none"
                     />
                   </div>
@@ -826,6 +862,7 @@ export default function Schedule() {
                     <label className="block text-sm font-medium text-slate-300 mb-2">Kraj (Datum i Vreme)</label>
                     <input 
                       type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} required={!isRecurring}
+                      step="3600"
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary outline-none"
                     />
                   </div>

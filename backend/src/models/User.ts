@@ -17,6 +17,7 @@ export interface IUser extends Document {
   membershipExpiresAt?: Date;
   isActive: boolean;
   createdBy?: mongoose.Types.ObjectId;
+  googleRefreshToken?: string;
 }
 
 const UserSchema: Schema = new Schema({
@@ -43,7 +44,8 @@ const UserSchema: Schema = new Schema({
   lastLoginAt: { type: Date },
   membershipExpiresAt: { type: Date },
   isActive: { type: Boolean, default: true },
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User' }
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  googleRefreshToken: { type: String }
 }, { timestamps: true });
 
 // Indeks za brzu proveru isteklih članarina za učenike

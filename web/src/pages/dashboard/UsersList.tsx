@@ -5,10 +5,11 @@ import {
   useUpdateUserMutation, 
   useCreateUserMutation,
   useDeleteUserMutation,
-  useToggleUserStatusMutation
+  useToggleUserStatusMutation,
+  useApproveCertificateMutation
 } from '../../store/apiSlice';
 import { Button } from '../../components/ui/Button';
-import { Edit2, Shield, User as UserIcon, X, Loader2, Search, ChevronLeft, ChevronRight, Filter, Plus, Power, Trash2, Info } from 'lucide-react';
+import { Edit2, Shield, User as UserIcon, X, Loader2, Search, ChevronLeft, ChevronRight, Filter, Plus, Power, Trash2, Info, Award } from 'lucide-react';
 import type { UserResponse } from '@elegant-code/shared';
 import { useDebounce } from '../../hooks/useDebounce';
 import { UserDetailsModal } from '../../components/users/UserDetailsModal';
@@ -44,9 +45,12 @@ export default function UsersList() {
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [toggleUserStatus] = useToggleUserStatusMutation();
+  const [approveCertificate, { isLoading: isApprovingCert }] = useApproveCertificateMutation();
 
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [certCourseName, setCertCourseName] = useState('');
   
   // Stanja forme za izmenu
   const [editFirstName, setEditFirstName] = useState('');
@@ -188,9 +192,22 @@ export default function UsersList() {
     if (window.confirm(`Da li ste sigurni da želite da ${actionText} korisnika ${user.firstName} ${user.lastName}?`)) {
       try {
         await toggleUserStatus(user._id).unwrap();
-      } catch (err: any) {
-        alert(err?.data?.error || 'Greška pri promeni statusa korisnika.');
+      } catch (error) {
+        console.error('Greška pri promeni statusa', error);
+        alert('Došlo je do greške pri promeni statusa. Pokušajte ponovo.');
       }
+    }
+  };
+
+  const handleApproveCertificate = async () => {
+    if (!selectedUser || !certCourseName.trim()) return;
+    try {
+      await approveCertificate({ studentId: selectedUser._id, courseName: certCourseName }).unwrap();
+      setIsCertModalOpen(false);
+      setCertCourseName('');
+      alert(`Sertifikat uspešno odobren za ${selectedUser.firstName}`);
+    } catch (err: any) {
+      alert(err?.data?.error || 'Došlo je do greške pri odobravanju sertifikata.');
     }
   };
 
@@ -350,6 +367,20 @@ export default function UsersList() {
                             title={user.isActive === false ? "Aktiviraj nalog" : "Deaktiviraj nalog"}
                           >
                             <Power className="w-4 h-4" />
+                          </button>
+                        )}
+                        
+                        {/* Odobri Sertifikat (Admin/SuperAdmin/Profesor) za Učenike/Klijente */}
+                        {(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN' || currentUser?.role === 'PROFESOR') && (user.role === 'UCENIK' || user.role === 'KLIJENT') && (
+                          <button 
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setIsCertModalOpen(true);
+                            }}
+                            className="p-2 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors inline-flex items-center"
+                            title="Odobri Sertifikat"
+                          >
+                            <Award className="w-4 h-4" />
                           </button>
                         )}
                         
@@ -643,6 +674,58 @@ export default function UsersList() {
             setSelectedUser(null);
           }} 
         />
+      )}
+
+      {/* Approve Certificate Modal */}
+      {isCertModalOpen && selectedUser && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-slate-800">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Award className="w-6 h-6 text-amber-400" />
+                Odobri Sertifikat
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsCertModalOpen(false);
+                  setCertCourseName('');
+                }} 
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-slate-300 text-sm">
+                Odobravate sertifikat za učenika <span className="font-bold">{selectedUser.firstName} {selectedUser.lastName}</span>.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Izaberite vrstu sertifikata</label>
+                <select 
+                  value={certCourseName} 
+                  onChange={(e) => setCertCourseName(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="">-- Odaberite tehnologiju --</option>
+                  <option value="HTML5">HTML5</option>
+                  <option value="CSS3">CSS3</option>
+                  <option value="JavaScript">JavaScript</option>
+                  <option value="React">React</option>
+                  <option value="React Native">React Native</option>
+                  <option value="Full Stack">Full Stack</option>
+                </select>
+              </div>
+              <Button 
+                onClick={handleApproveCertificate}
+                isLoading={isApprovingCert}
+                disabled={!certCourseName.trim() || isApprovingCert}
+                className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900"
+              >
+                Odobri Sertifikat
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
