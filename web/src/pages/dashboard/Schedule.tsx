@@ -675,28 +675,27 @@ export default function Schedule() {
 
                 if (startHour < 8 || startHour >= 23) return null;
 
-                // Kockica se uvek "lepi" za početak sata, ignorišući minute za top poziciju
-                const topPosition = (startHour - 8) * 80 + 88; 
-                // Visina se zaokružuje na pune sate (kockice)
-                const blockSpan = Math.max(1, Math.round(durationMinutes / 60));
-                const height = blockSpan * 80;
+                const topPosition = (startHour - 8) * 80 + (startMin / 60) * 80 + 88; 
+                const height = (durationMinutes / 60) * 80;
                 
-                const leftRatio = dayIndex / 7;
-                
-                // Kaskadni offset (pomeramo svaku preklopljenu kockicu za 10px dole i desno)
+                const leftRatio = cls._dayIndex / 7;
+                const totalCols = cls._totalColumns || 1;
                 const col = cls._column || 0;
-                const cascadeOffset = col * 8; 
+                
+                const colWidth = `((100% - 4rem) / 7)`;
+                const overlapWidth = `calc(${colWidth} / ${totalCols} - 6px)`;
+                const overlapLeftOffset = `calc(${colWidth} / ${totalCols} * ${col})`;
 
                 return (
                   <div 
                     key={cls._id}
-                    className="absolute rounded-xl border border-primary/20 overflow-hidden shadow-lg hover:shadow-primary/30 transition-all cursor-pointer flex flex-col justify-between hover:z-50"
+                    className="absolute rounded-xl border border-primary/20 overflow-hidden shadow-lg hover:shadow-primary/10 transition-shadow cursor-pointer flex flex-col justify-between"
                     style={{ 
-                      top: `calc(${topPosition}px + ${cascadeOffset}px)`, 
+                      top: `${topPosition}px`, 
                       height: `${height}px`,
-                      left: `calc(4rem + (100% - 4rem) * ${leftRatio} + 4px + ${cascadeOffset}px)`, 
-                      width: `calc((100% - 4rem) / 7 - 8px)`,
-                      zIndex: 10 + col,
+                      left: `calc(4rem + (100% - 4rem) * ${leftRatio} + ${overlapLeftOffset} + 3px)`, 
+                      width: overlapWidth,
+                      zIndex: 10,
                       backgroundColor: cls.status === 'ZAVRSEN' ? 'rgba(30, 41, 59, 0.9)' : 
                                        cls.status === 'OTKAZAN' ? 'rgba(239, 68, 68, 0.1)' : 
                                        'rgba(16, 185, 129, 0.1)',
