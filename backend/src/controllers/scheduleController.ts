@@ -390,6 +390,11 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    if (req.user?.role === 'PROFESOR' && classSession.status === 'OTKAZAN') {
+      res.status(403).json({ error: 'Samo Admin i Super Admin mogu trajno brisati otkazane časove.' });
+      return;
+    }
+
     if (deleteAll && classSession.recurringGroupId) {
       // Brišemo samo predstojeće i trenutne časove iz ciklusa (status: ZAKAZAN),
       // ne diramo ZAVRSENE kako ne bi izgubili istoriju i XP
