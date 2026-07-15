@@ -384,7 +384,7 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
 
     if (
       req.user?.role === 'PROFESOR' && 
-      classSession.profesorId.toString() !== req.user._id.toString()
+      (!classSession.profesorId || classSession.profesorId.toString() !== req.user._id.toString())
     ) {
       res.status(403).json({ error: 'Možete obrisati samo svoje časove.' });
       return;
@@ -401,15 +401,21 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
       res.json({ message: 'Ceo predstojeći ciklus je obrisan' });
       
       // Notifikacija
-      setTimeout(async () => {
-        const notifications = classSession.students.map((st: any) => ({
-          userId: st.studentId,
-          title: 'Ciklus Časova Otkazan',
-          message: `Otkazan je vaš predstojeći ciklus časova (${classSession.courseName} nivo).`,
-          type: 'WARNING'
-        }));
-        await Notification.insertMany(notifications).catch(console.error);
-      }, 0);
+      if (classSession.students && classSession.students.length > 0) {
+        setTimeout(async () => {
+          try {
+            const notifications = classSession.students.map((st: any) => ({
+              userId: st.studentId,
+              title: 'Ciklus Časova Otkazan',
+              message: `Otkazan je vaš predstojeći ciklus časova (${classSession.courseName} nivo).`,
+              type: 'WARNING'
+            }));
+            await Notification.insertMany(notifications);
+          } catch (err) {
+            console.error('Notification error:', err);
+          }
+        }, 0);
+      }
 
     } else {
       await rollbackStudentProgress(classSession);
@@ -417,20 +423,25 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
       res.json({ message: 'Čas je uspešno obrisan' });
 
       // Notifikacija
-      if (classSession.status === 'ZAKAZAN') {
+      if (classSession.status === 'ZAKAZAN' && classSession.students && classSession.students.length > 0) {
         setTimeout(async () => {
-          const notifications = classSession.students.map((st: any) => ({
-            userId: st.studentId,
-            title: 'Čas Otkazan',
-            message: `Otkazan je vaš zakazani čas za ${classSession.courseName} nivo.`,
-            type: 'WARNING'
-          }));
-          await Notification.insertMany(notifications).catch(console.error);
+          try {
+            const notifications = classSession.students.map((st: any) => ({
+              userId: st.studentId,
+              title: 'Čas Otkazan',
+              message: `Otkazan je vaš zakazani čas za ${classSession.courseName} nivo.`,
+              type: 'WARNING'
+            }));
+            await Notification.insertMany(notifications);
+          } catch (err) {
+            console.error('Notification error:', err);
+          }
         }, 0);
       }
     }
-  } catch (error) {
-    res.status(500).json({ error: 'Greška pri brisanju časa' });
+  } catch (error: any) {
+    console.error('API Error in deleteClass:', error);
+    res.status(500).json({ error: 'Greška pri brisanju časa', details: error?.message });
   }
 };
 
