@@ -675,8 +675,11 @@ export default function Schedule() {
 
                 if (startHour < 8 || startHour >= 23) return null;
 
-                const topPosition = (startHour - 8) * 80 + (startMin / 60) * 80 + 88; 
-                const height = (durationMinutes / 60) * 80;
+                // Kockica se uvek "lepi" za početak sata, ignorišući minute za top poziciju
+                const topPosition = (startHour - 8) * 80 + 88; 
+                // Visina se zaokružuje na pune sate (kockice)
+                const blockSpan = Math.max(1, Math.round(durationMinutes / 60));
+                const height = blockSpan * 80;
                 
                 const leftRatio = dayIndex / 7;
                 
