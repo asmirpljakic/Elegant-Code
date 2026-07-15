@@ -75,10 +75,10 @@ export default function VerifyOTP() {
       const response = await verifyOtp({ email: email!, otpCode: codeToVerify }).unwrap();
       setIsSuccess(true);
       dispatch(setCredentials({ token: response.token }));
-      // Dajemo kratku pauzu da korisnik vidi zelene kvadratice
+      // Dajemo kratku pauzu da korisnik vidi zelene kvadratice i animaciju
       setTimeout(() => {
         navigate('/dashboard');
-      }, 800);
+      }, 1500);
     } catch (err: any) {
       setErrorMsg(err.data?.error || 'Neispravan kod. Pokušajte ponovo.');
     }
@@ -164,9 +164,18 @@ export default function VerifyOTP() {
             ))}
           </div>
 
-          <Button type="submit" className="w-full mt-8 h-12 text-lg" isLoading={isLoading}>
-            Verifikuj Nalog <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
+          {isSuccess ? (
+            <div className="w-full mt-8 h-12 flex items-center justify-center bg-green-500/20 text-green-400 border border-green-500/50 rounded-xl text-lg font-bold animate-in zoom-in duration-300">
+              <svg className="w-6 h-6 mr-2 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Uspešno!
+            </div>
+          ) : (
+            <Button type="submit" className="w-full mt-8 h-12 text-lg" isLoading={isLoading}>
+              Verifikuj Nalog <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          )}
         </form>
 
         <div className="mt-8 text-center space-y-4 relative z-10">
