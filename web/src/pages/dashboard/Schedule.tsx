@@ -250,7 +250,7 @@ export default function Schedule() {
       const dayIndex = weekDays.findIndex(d => isSameDay(d, startDate));
       if (dayIndex !== -1) {
         if (!classesByDay[dayIndex]) classesByDay[dayIndex] = [];
-        classesByDay[dayIndex].push(cls);
+        classesByDay[dayIndex].push({ ...cls });
       }
     });
     
