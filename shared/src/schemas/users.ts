@@ -17,7 +17,8 @@ export const updateUserSchema = z.object({
   password: z.string().min(6, "Lozinka mora imati bar 6 karaktera").optional(),
   phoneNumber: z.string().optional(),
   role: z.enum(['SUPER_ADMIN', 'ADMIN', 'PROFESOR', 'UCENIK', 'KLIJENT', 'GOST']).optional(),
-  activePackage: z.enum(['NONE', 'OSNOVNI', 'SREDNJI', 'NAPREDNI']).optional()
+  activePackage: z.enum(['NONE', 'OSNOVNI', 'SREDNJI', 'NAPREDNI']).optional(),
+  makeupClassesOwed: z.number().min(0).optional()
 });
 
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
@@ -35,6 +36,7 @@ export interface UserResponse {
     currentLevel: number;
     totalClassesAttended: number;
     xp: number;
+    makeupClassesOwed: number;
   };
   lastLoginAt?: Date;
   membershipExpiresAt?: Date;

@@ -43,13 +43,26 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['User'],
     }),
-    register: builder.mutation<{ token: string; user: any }, RegisterFormData>({
+    register: builder.mutation<any, Partial<any>>({
       query: (userData) => ({
         url: '/auth/register',
         method: 'POST',
         body: userData,
       }),
-      invalidatesTags: ['User'],
+    }),
+    verifyOtp: builder.mutation<any, { email: string, otpCode: string }>({
+      query: (data) => ({
+        url: '/auth/verify-otp',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    resendOtp: builder.mutation<any, { email: string }>({
+      query: (data) => ({
+        url: '/auth/resend-otp',
+        method: 'POST',
+        body: data,
+      }),
     }),
     getUsers: builder.query<GetUsersResponse, GetUsersParams | void>({
       query: (params) => {
@@ -140,6 +153,13 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['ClassSession', 'User', 'Users'], // Update korisnika zbog XP poena
     }),
+    cancelClass: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/schedule/${id}/cancel`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['ClassSession', 'User', 'Users'],
+    }),
     getAnalytics: builder.query<any, void>({
       query: () => '/analytics',
       providesTags: ['ClassSession', 'Users'],
@@ -204,6 +224,7 @@ export const {
   useGetScheduleQuery,
   useCreateClassMutation,
   useCompleteClassMutation,
+  useCancelClassMutation,
   useUpdateClassMutation,
   useDeleteClassMutation,
   useDeleteCompletedClassesMutation,
@@ -216,5 +237,7 @@ export const {
   useGetMeQuery,
   useGetMyCertificatesQuery,
   useGetStudentCertificatesQuery,
-  useApproveCertificateMutation
+  useApproveCertificateMutation,
+  useVerifyOtpMutation,
+  useResendOtpMutation
 } = apiSlice;

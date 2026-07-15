@@ -25,9 +25,8 @@ export default function Register() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await registerUser(data).unwrap();
-      dispatch(setCredentials({ token: response.token }));
-      navigate('/dashboard');
+      await registerUser(data).unwrap();
+      navigate(`/verify-otp?email=${encodeURIComponent(data.email)}`);
     } catch (err) {
       console.error('Greška pri registraciji:', err);
     }

@@ -9,7 +9,7 @@ import {
   useApproveCertificateMutation
 } from '../../store/apiSlice';
 import { Button } from '../../components/ui/Button';
-import { Edit2, Shield, User as UserIcon, X, Loader2, Search, ChevronLeft, ChevronRight, Filter, Plus, Power, Trash2, Info, Award } from 'lucide-react';
+import { Search, Plus, Filter, MoreVertical, Edit2, Shield, Trash2, Power, UserPlus, FileSignature, Minus, Loader2, ChevronLeft, ChevronRight, X, User as UserIcon, Info, Award } from 'lucide-react';
 import type { UserResponse } from '@elegant-code/shared';
 import { useDebounce } from '../../hooks/useDebounce';
 import { UserDetailsModal } from '../../components/users/UserDetailsModal';
@@ -187,6 +187,25 @@ export default function UsersList() {
     }
   };
 
+  const handleUpdateMakeup = async (user: UserResponse, change: number) => {
+    try {
+      const currentOwed = user.progress?.makeupClassesOwed || 0;
+      const newValue = currentOwed + change;
+      if (newValue < 0) return; // Ne može manje od 0
+
+      await updateUser({
+        id: user._id,
+        data: {
+          makeupClassesOwed: newValue
+        }
+      }).unwrap();
+    } catch (err: any) {
+      console.error('Failed to update makeup classes', err);
+      const serverError = err?.data?.error;
+      alert(serverError || 'Greška pri ažuriranju časova za nadoknadu.');
+    }
+  };
+
   const handleToggleStatus = async (user: UserResponse) => {
     const actionText = user.isActive === false ? 'aktivirate' : 'deaktivirate';
     if (window.confirm(`Da li ste sigurni da želite da ${actionText} korisnika ${user.firstName} ${user.lastName}?`)) {
@@ -302,6 +321,7 @@ export default function UsersList() {
                 <th className="px-6 py-4 font-medium">Uloga</th>
                 <th className="px-6 py-4 font-medium">Aktivan Paket</th>
                 <th className="px-6 py-4 font-medium">Datum Registracije</th>
+                <th className="px-6 py-4 font-medium text-center">Za Nadoknadu</th>
                 <th className="px-6 py-4 font-medium text-right">Akcije</th>
               </tr>
             </thead>
@@ -352,6 +372,30 @@ export default function UsersList() {
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-400">
                       {new Date(user.createdAt).toLocaleDateString('sr-RS')}
+                    </td>
+                    <td className="px-6 py-4">
+                      {['UCENIK', 'KLIJENT'].includes(user.role) ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <button 
+                            onClick={() => handleUpdateMakeup(user, -1)}
+                            disabled={!user.progress?.makeupClassesOwed}
+                            className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className={`font-bold w-6 text-center ${user.progress?.makeupClassesOwed ? 'text-red-400' : 'text-slate-400'}`}>
+                            {user.progress?.makeupClassesOwed || 0}
+                          </span>
+                          <button 
+                            onClick={() => handleUpdateMakeup(user, 1)}
+                            className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-slate-600 block text-center">-</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">

@@ -305,6 +305,69 @@ const rollbackStudentProgress = async (classSession: any) => {
   }
 };
 
+// @desc    Otkaži čas i dodaj nadoknadu učenicima
+// @route   PUT /api/schedule/:id/cancel
+// @access  Private/Profesor ili Admin
+export const cancelClass = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const classId = req.params.id;
+    const classSession = await ClassSession.findById(classId);
+    
+    if (!classSession) {
+      res.status(404).json({ error: 'Čas nije pronađen' });
+      return;
+    }
+
+    if (
+      req.user?.role !== 'SUPER_ADMIN' && 
+      req.user?.role !== 'ADMIN' && 
+      classSession.profesorId.toString() !== req.user?._id.toString()
+    ) {
+      res.status(403).json({ error: 'Samo profesor koji drži ovaj čas može da ga otkaže' });
+      return;
+    }
+
+    if (classSession.status === 'ZAVRSEN') {
+      res.status(400).json({ error: 'Ne možete otkazati čas koji je već završen.' });
+      return;
+    }
+    
+    if (classSession.status === 'OTKAZAN') {
+      res.status(400).json({ error: 'Čas je već otkazan.' });
+      return;
+    }
+
+    classSession.status = 'OTKAZAN';
+    classSession.meetingLink = ''; 
+    await classSession.save();
+
+    // Dodaj 1 čas za nadoknadu svakom učeniku iz ovog časa
+    for (const studentData of classSession.students) {
+      const student = await User.findById(studentData.studentId);
+      if (student) {
+        if (!student.progress) {
+          student.progress = { currentLevel: 1, totalClassesAttended: 0, xp: 0, makeupClassesOwed: 0 };
+        }
+        student.progress.makeupClassesOwed = (student.progress.makeupClassesOwed || 0) + 1;
+        student.markModified('progress');
+        await student.save();
+
+        // Notifikacija za učenika
+        await Notification.create({
+          userId: student._id,
+          title: 'Čas je Otkazan ❌',
+          message: `Tvoj čas (${classSession.courseName} nivo) je otkazan. Dodat ti je 1 čas za nadoknadu!`,
+          type: 'WARNING'
+        });
+      }
+    }
+
+    res.json({ message: 'Čas je uspešno otkazan, nadoknada je dodata učenicima.', classSession });
+  } catch (error) {
+    res.status(500).json({ error: 'Greška pri otkazivanju časa' });
+  }
+};
+
 // @desc    Obriši čas (ili ceo ciklus)
 // @route   DELETE /api/schedule/:id
 // @access  Private/Admin

@@ -230,14 +230,16 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         return;
       }
       
-      // Profesor sme menjati samo učenike koje predaje
+      // Profesor sme menjati samo učenike koje predaje ILI koje je on kreirao
       const teachesStudent = await ClassSession.exists({
         profesorId: currentUser._id,
         'students.studentId': userToEdit._id
       });
+      
+      const createdStudent = userToEdit.createdBy?.toString() === currentUser._id.toString();
 
-      if (!teachesStudent) {
-        res.status(403).json({ error: 'Možete menjati samo učenike kojima predajete.' });
+      if (!teachesStudent && !createdStudent) {
+        res.status(403).json({ error: 'Možete menjati samo učenike kojima trenutno predajete ili koje ste vi lično kreirali.' });
         return;
       }
     }
@@ -272,6 +274,14 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     // Ako prosleđujemo novi paket (i imamo prava za to)
     if (validation.data.activePackage) {
       userToEdit.activePackage = validation.data.activePackage;
+    }
+
+    // Ažuriranje broja časova za nadoknadu
+    if (validation.data.makeupClassesOwed !== undefined) {
+      userToEdit.progress = {
+        ...userToEdit.progress,
+        makeupClassesOwed: validation.data.makeupClassesOwed
+      } as any;
     }
 
     // Ažuriranje lozinke

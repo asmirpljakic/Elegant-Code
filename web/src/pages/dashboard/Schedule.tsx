@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGetScheduleQuery, useCreateClassMutation, useCompleteClassMutation, useGetUsersQuery, useUpdateClassMutation, useDeleteClassMutation, useDeleteCompletedClassesMutation } from '../../store/apiSlice';
+import { useGetScheduleQuery, useCreateClassMutation, useCompleteClassMutation, useCancelClassMutation, useGetUsersQuery, useUpdateClassMutation, useDeleteClassMutation, useDeleteCompletedClassesMutation } from '../../store/apiSlice';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { Button } from '../../components/ui/Button';
@@ -29,6 +29,7 @@ export default function Schedule() {
   
   const [createClass, { isLoading: isCreating }] = useCreateClassMutation();
   const [completeClass, { isLoading: isCompleting }] = useCompleteClassMutation();
+  const [cancelClass, { isLoading: isCanceling }] = useCancelClassMutation();
   const [updateClass, { isLoading: isUpdating }] = useUpdateClassMutation();
   const [deleteClass, { isLoading: isDeleting }] = useDeleteClassMutation();
   const [deleteCompletedClasses, { isLoading: isDeletingCompleted }] = useDeleteCompletedClassesMutation();
@@ -43,7 +44,7 @@ export default function Schedule() {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
   // Novi filteri za Status i Link
-  const [filterStatus, setFilterStatus] = useState<'SVI' | 'ZAKAZAN' | 'ZAVRSEN'>('SVI');
+  const [filterStatus, setFilterStatus] = useState<'SVI' | 'ZAKAZAN' | 'ZAVRSEN' | 'OTKAZAN'>('SVI');
   const [filterLink, setFilterLink] = useState<'SVI' | 'IMA_LINK' | 'NEMA_LINK'>('SVI');
 
 
@@ -150,6 +151,17 @@ export default function Schedule() {
     }
   };
 
+  const handleCancel = async () => {
+    if (!selectedClass || !window.confirm('Da li ste sigurni da želite da OTKAŽETE ovaj čas? Učenicima će automatski biti dodat 1 čas za nadoknadu.')) return;
+    try {
+      await cancelClass(selectedClass._id).unwrap();
+      setIsClassDetailsModalOpen(false);
+    } catch (error: any) {
+      console.error(error);
+      alert(error.data?.error || 'Greška pri otkazivanju časa');
+    }
+  };
+
   const handleUpdate = async () => {
     if (!selectedClass) return;
     const updateAll = window.confirm('Da li želite da primenite ovu izmenu (Teme i Linka) na ceo predstojeći ciklus? (Odbijte ako menjate samo ovaj jedan čas)');
@@ -170,6 +182,7 @@ export default function Schedule() {
     // 1. Status Filter
     if (filterStatus === 'ZAKAZAN' && cls.status !== 'ZAKAZAN') return false;
     if (filterStatus === 'ZAVRSEN' && cls.status !== 'ZAVRSEN') return false;
+    if (filterStatus === 'OTKAZAN' && cls.status !== 'OTKAZAN') return false;
 
     // 2. Link Filter
     if (filterLink === 'IMA_LINK' && (!cls.meetingLink || cls.meetingLink.trim() === '')) return false;
@@ -329,6 +342,7 @@ export default function Schedule() {
               <option value="SVI">Svi statusi</option>
               <option value="ZAKAZAN">Zakazani</option>
               <option value="ZAVRSEN">Završeni</option>
+              <option value="OTKAZAN">Otkazani</option>
             </select>
             
             <select
@@ -424,7 +438,9 @@ export default function Schedule() {
                             {cls.courseName}
                           </span>
                           <span className={`text-xs font-medium px-2 py-1 rounded-md ${
-                            cls.status === 'ZAVRSEN' ? 'bg-slate-800 text-slate-400' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                            cls.status === 'ZAVRSEN' ? 'bg-slate-800 text-slate-400' : 
+                            cls.status === 'OTKAZAN' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                            'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                           }`}>
                             {cls.status}
                           </span>
@@ -451,7 +467,7 @@ export default function Schedule() {
                     </div>
 
                     <div className="flex flex-col justify-center gap-3 min-w-[200px]">
-                      {cls.status === 'ZAVRSEN' || !cls.meetingLink || cls.meetingLink.trim() === '' ? (
+                      {cls.status === 'ZAVRSEN' || cls.status === 'OTKAZAN' || !cls.meetingLink || cls.meetingLink.trim() === '' ? (
                         <Button disabled className="w-full flex items-center justify-center bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700">
                           <Video className="w-4 h-4 mr-2 opacity-50" />
                           Link još nije dodat
@@ -629,7 +645,9 @@ export default function Schedule() {
                       height: `${height}px`,
                       left: `calc(4rem + (100% - 4rem) * ${leftRatio} + 4px)`, // Tačno pozicioniranje u kolonu
                       width: `calc((100% - 4rem) / 7 - 8px)`, // Tačna širina kolone minus padding
-                      backgroundColor: cls.status === 'ZAVRSEN' ? 'rgba(30, 41, 59, 0.9)' : 'rgba(16, 185, 129, 0.1)',
+                      backgroundColor: cls.status === 'ZAVRSEN' ? 'rgba(30, 41, 59, 0.9)' : 
+                                       cls.status === 'OTKAZAN' ? 'rgba(239, 68, 68, 0.1)' : 
+                                       'rgba(16, 185, 129, 0.1)',
                       backdropFilter: 'blur(4px)',
                       zIndex: 10
                     }}
@@ -959,32 +977,40 @@ export default function Schedule() {
 
               {/* Sekcija 2: Editovanje Teme i Linka */}
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-slate-400">Izmena Detalja</h4>
+                <h4 className="text-sm font-semibold text-slate-400">
+                  {selectedClass.status === 'OTKAZAN' ? 'Razlog Otkazivanja' : 'Izmena Detalja'}
+                </h4>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Tema časa</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                    {selectedClass.status === 'OTKAZAN' ? 'Unesite razlog otkazivanja' : 'Tema časa'}
+                  </label>
                   <input 
                     type="text" value={topic} onChange={(e) => setTopic(e.target.value)}
                     className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:ring-2 focus:ring-primary outline-none"
+                    placeholder={selectedClass.status === 'OTKAZAN' ? "Npr. Bolest profesora" : ""}
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Link za pristup</label>
-                  <input 
-                    type="url" value={meetingLink} onChange={(e) => setMeetingLink(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:ring-2 focus:ring-primary outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={user?.role === 'PROFESOR' && selectedClass && (new Date(selectedClass.startTime).getTime() - now > 30 * 60 * 1000)}
-                  />
-                  {user?.role === 'PROFESOR' && selectedClass && (new Date(selectedClass.startTime).getTime() - now > 30 * 60 * 1000) && (
-                    <p className="text-xs text-amber-500 mt-1">Sistem automatski generiše link 30 min pre časa.</p>
-                  )}
-                </div>
+                {/* Ako je čas OTKAZAN, profesori ne mogu da menjaju link (ali admini mogu) */}
+                {!(selectedClass.status === 'OTKAZAN' && user?.role === 'PROFESOR') && (
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Link za pristup</label>
+                    <input 
+                      type="url" value={meetingLink} onChange={(e) => setMeetingLink(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:ring-2 focus:ring-primary outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={user?.role === 'PROFESOR' && selectedClass && (new Date(selectedClass.startTime).getTime() - now > 30 * 60 * 1000)}
+                    />
+                    {user?.role === 'PROFESOR' && selectedClass && (new Date(selectedClass.startTime).getTime() - now > 30 * 60 * 1000) && (
+                      <p className="text-xs text-amber-500 mt-1">Sistem automatski generiše link 30 min pre časa.</p>
+                    )}
+                  </div>
+                )}
                 <Button onClick={handleUpdate} isLoading={isUpdating} variant="outline" className="w-full">
-                  Sačuvaj Izmene
+                  Sačuvaj {selectedClass.status === 'OTKAZAN' ? 'Razlog' : 'Izmene'}
                 </Button>
               </div>
 
-              {/* Sekcija 3: Završetak časa (Ako nije završen) */}
-              {selectedClass.status !== 'ZAVRSEN' && (
+              {/* Sekcija 3: Završetak časa (Ako nije završen ni otkazan) */}
+              {selectedClass.status !== 'ZAVRSEN' && selectedClass.status !== 'OTKAZAN' && (
                 <div className="space-y-4 pt-6 border-t border-slate-800">
                   <h4 className="text-sm font-semibold text-primary">Završi Čas (Dodela XP-a)</h4>
                   <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
@@ -1012,20 +1038,33 @@ export default function Schedule() {
                 </div>
               )}
 
-              {/* Sekcija 4: Brisanje (Opasna zona) */}
-              <div className="pt-6 border-t border-red-900/30">
-                <h4 className="text-sm font-semibold text-red-400 mb-3">Opasna Zona (Brisanje)</h4>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button onClick={() => handleDelete(false)} isLoading={isDeleting} variant="outline" className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/10">
-                    <Trash2 className="w-4 h-4 mr-2" /> Obriši SAMO OVO
+              {/* Sekcija 3.5: Otkazivanje časa (Dodela nadoknade) */}
+              {selectedClass.status !== 'ZAVRSEN' && selectedClass.status !== 'OTKAZAN' && (
+                <div className="pt-6 border-t border-slate-800">
+                  <h4 className="text-sm font-semibold text-orange-400 mb-3">Otkazivanje časa (Nadoknada)</h4>
+                  <p className="text-xs text-slate-400 mb-4">Ako otkažete čas, on ostaje u bazi kao "OTKAZAN", a svim učenicima iz ovog časa će se automatski dodati 1 čas za nadoknadu.</p>
+                  <Button onClick={handleCancel} isLoading={isCanceling} variant="outline" className="w-full border-orange-500/50 text-orange-400 hover:bg-orange-500/10">
+                    <X className="w-4 h-4 mr-2" /> Otkaži Čas i Dodaj Nadoknadu
                   </Button>
-                  {selectedClass.recurringGroupId && (
-                    <Button onClick={() => handleDelete(true)} isLoading={isDeleting} variant="outline" className="flex-1 bg-red-950/50 border-red-500 text-red-400 hover:bg-red-900/80">
-                      <Trash2 className="w-4 h-4 mr-2" /> Obriši CEO CIKLUS
-                    </Button>
-                  )}
                 </div>
-              </div>
+              )}
+
+              {/* Sekcija 4: Brisanje (Opasna zona) */}
+              {!(selectedClass.status === 'OTKAZAN' && user?.role === 'PROFESOR') && (
+                <div className="pt-6 border-t border-red-900/30">
+                  <h4 className="text-sm font-semibold text-red-400 mb-3">Opasna Zona (Brisanje iz Baze)</h4>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button onClick={() => handleDelete(false)} isLoading={isDeleting} variant="outline" className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/10">
+                      <Trash2 className="w-4 h-4 mr-2" /> Obriši SAMO OVO
+                    </Button>
+                    {selectedClass.recurringGroupId && (
+                      <Button onClick={() => handleDelete(true)} isLoading={isDeleting} variant="outline" className="flex-1 bg-red-950/50 border-red-500 text-red-400 hover:bg-red-900/80">
+                        <Trash2 className="w-4 h-4 mr-2" /> Obriši CEO CIKLUS
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>

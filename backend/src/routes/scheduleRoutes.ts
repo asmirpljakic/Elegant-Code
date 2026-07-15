@@ -1,5 +1,5 @@
 import express from 'express';
-import { getSchedule, createClass, completeClass, deleteClass, updateClass, deleteCompletedClasses } from '../controllers/scheduleController';
+import { getSchedule, createClass, completeClass, cancelClass, deleteClass, updateClass, deleteCompletedClasses } from '../controllers/scheduleController';
 import { protect, admin, authorize } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -20,5 +20,7 @@ router.route('/:id')
 // Trenutno samo admin može završiti svoj čas iz ove rute, 
 // ali u kontroleru se proverava da li je to profesorov čas
 router.put('/:id/complete', protect, completeClass);
+
+router.put('/:id/cancel', protect, authorize('SUPER_ADMIN', 'ADMIN', 'PROFESOR'), cancelClass);
 
 export default router;

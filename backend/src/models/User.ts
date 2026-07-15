@@ -12,12 +12,16 @@ export interface IUser extends Document {
     currentLevel: number;
     totalClassesAttended: number;
     xp: number;
+    makeupClassesOwed?: number;
   };
   lastLoginAt?: Date;
   membershipExpiresAt?: Date;
   isActive: boolean;
   createdBy?: mongoose.Types.ObjectId;
   googleRefreshToken?: string;
+  isVerified: boolean;
+  otpCode?: string;
+  otpExpiresAt?: Date;
 }
 
 const UserSchema: Schema = new Schema({
@@ -39,13 +43,17 @@ const UserSchema: Schema = new Schema({
   progress: {
     currentLevel: { type: Number, default: 1 },
     totalClassesAttended: { type: Number, default: 0 },
-    xp: { type: Number, default: 0 }
+    xp: { type: Number, default: 0 },
+    makeupClassesOwed: { type: Number, default: 0 }
   },
   lastLoginAt: { type: Date },
   membershipExpiresAt: { type: Date },
   isActive: { type: Boolean, default: true },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
-  googleRefreshToken: { type: String }
+  googleRefreshToken: { type: String },
+  isVerified: { type: Boolean, default: false },
+  otpCode: { type: String },
+  otpExpiresAt: { type: Date }
 }, { timestamps: true });
 
 // Indeks za brzu proveru isteklih članarina za učenike
