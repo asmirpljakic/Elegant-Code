@@ -13,11 +13,17 @@ export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [visibleCount, setVisibleCount] = useState(6);
+
   // Zbog brzine promene, refetchujemo na svaki fokus i često proveravamo (real-time doživljaj)
-  const { data: notifications = [] } = useGetNotificationsQuery(undefined, {
+  const { data, isLoading } = useGetNotificationsQuery({ limit: visibleCount }, {
     refetchOnFocus: true,
     pollingInterval: 3000 // Proveravaj na svake 3 sekunde za real-time notifikacije
   });
+
+  const notifications = data?.notifications || [];
+  const total = data?.total || 0;
+  const hasMore = notifications.length < total;
 
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
@@ -149,6 +155,20 @@ export function NotificationDropdown() {
                     )}
                   </div>
                 ))}
+                
+                {hasMore && (
+                  <div className="p-3 text-center border-t border-slate-800/50">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setVisibleCount(prev => prev + 5);
+                      }}
+                      className="text-xs font-medium text-primary hover:text-emerald-400 transition-colors py-2 px-4 rounded-lg hover:bg-primary/10 w-full"
+                    >
+                      Učitaj još obaveštenja
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

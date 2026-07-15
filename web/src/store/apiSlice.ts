@@ -172,8 +172,11 @@ export const apiSlice = createApi({
       query: () => '/analytics',
       providesTags: ['ClassSession', 'Users'],
     }),
-    getNotifications: builder.query<any[], void>({
-      query: () => '/notifications',
+    getNotifications: builder.query<{ notifications: any[], total: number }, { limit?: number } | void>({
+      query: (params) => ({
+        url: '/notifications',
+        params: params || {},
+      }),
       providesTags: ['Notifications'],
     }),
     markNotificationAsRead: builder.mutation<void, string>({

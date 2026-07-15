@@ -12,8 +12,11 @@ export const getNotifications = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 }).limit(50);
-    res.json(notifications);
+    const limit = parseInt(req.query.limit as string) || 5;
+    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 }).limit(limit);
+    const total = await Notification.countDocuments({ userId });
+    
+    res.json({ notifications, total });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri učitavanju notifikacija.' });
   }
