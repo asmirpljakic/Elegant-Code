@@ -27,7 +27,10 @@ export const sendOTP = async (to: string, otp: string) => {
           </p>
           
           <div style="background-color: #f1f5f9; border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 8px; margin: 25px 0;">
-            <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #3b82f6;">${otp}</span>
+            <div style="font-size: 36px; font-weight: bold; font-family: monospace; color: #3b82f6; user-select: all; cursor: pointer; padding: 10px; background: #e2e8f0; border-radius: 6px; display: inline-block;">
+              ${otp}
+            </div>
+            <p style="font-size: 12px; color: #64748b; margin-top: 10px; font-family: Arial, sans-serif;">(Dvaput klikni na kod iznad da ga označiš i kopiraš)</p>
           </div>
           
           <p style="color: #64748b; font-size: 13px; text-align: center; margin-bottom: 0;">

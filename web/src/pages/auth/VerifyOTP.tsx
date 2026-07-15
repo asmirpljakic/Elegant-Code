@@ -12,6 +12,7 @@ export default function VerifyOTP() {
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
   
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
@@ -68,23 +69,36 @@ export default function VerifyOTP() {
     }
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const verifyAndLogin = async (codeToVerify: string) => {
     setErrorMsg('');
+    try {
+      const response = await verifyOtp({ email: email!, otpCode: codeToVerify }).unwrap();
+      setIsSuccess(true);
+      dispatch(setCredentials({ token: response.token }));
+      // Dajemo kratku pauzu da korisnik vidi zelene kvadratice
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 800);
+    } catch (err: any) {
+      setErrorMsg(err.data?.error || 'Neispravan kod. Pokušajte ponovo.');
+    }
+  };
+
+  useEffect(() => {
     const code = otp.join('');
-    
+    if (code.length === 6 && !isLoading && !isSuccess) {
+      verifyAndLogin(code);
+    }
+  }, [otp]);
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otp.join('');
     if (code.length !== 6) {
       setErrorMsg('Molimo vas da unesete svih 6 cifara.');
       return;
     }
-
-    try {
-      const response = await verifyOtp({ email: email!, otpCode: code }).unwrap();
-      dispatch(setCredentials({ token: response.token }));
-      navigate('/dashboard');
-    } catch (err: any) {
-      setErrorMsg(err.data?.error || 'Neispravan kod. Pokušajte ponovo.');
-    }
+    verifyAndLogin(code);
   };
 
   const handleResend = async () => {
@@ -141,7 +155,11 @@ export default function VerifyOTP() {
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
-                className="w-12 h-14 bg-slate-800 border border-slate-700 rounded-xl text-center text-2xl font-bold text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                className={`w-12 h-14 bg-slate-800 border rounded-xl text-center text-2xl font-bold outline-none transition-all ${
+                  isSuccess 
+                    ? 'border-green-500 text-green-400 bg-green-500/10 shadow-[0_0_15px_rgba(34,197,94,0.3)]' 
+                    : 'border-slate-700 text-white focus:ring-2 focus:ring-primary focus:border-primary'
+                }`}
               />
             ))}
           </div>
