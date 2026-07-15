@@ -27,6 +27,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
       const user = await User.findById(decoded.id).select('-password') as IUser;
       
+      if (!user) {
+        res.status(401).json({ error: 'NalogObrisan' });
+        return;
+      }
+
       if (user && !user.isActive) {
         res.status(403).json({ error: 'NalogDeaktiviran' });
         return;

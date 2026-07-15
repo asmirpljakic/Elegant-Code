@@ -240,6 +240,53 @@ export default function Schedule() {
   // Radni sati za kalendar (od 08:00 do 22:00)
   const HOURS = Array.from({ length: 15 }, (_, i) => i + 8);
 
+  // Algoritam za preklapanje časova
+  const classesWithLayout = useMemo(() => {
+    if (!weeklyClasses) return [];
+    const classesByDay: { [key: number]: any[] } = {};
+    
+    weeklyClasses.forEach((cls: any) => {
+      const startDate = new Date(cls.startTime);
+      const dayIndex = weekDays.findIndex(d => isSameDay(d, startDate));
+      if (dayIndex !== -1) {
+        if (!classesByDay[dayIndex]) classesByDay[dayIndex] = [];
+        classesByDay[dayIndex].push(cls);
+      }
+    });
+    
+    const result: any[] = [];
+    Object.keys(classesByDay).forEach(dayIndex => {
+      const dayClasses = classesByDay[Number(dayIndex)];
+      dayClasses.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      
+      const columns: any[][] = [];
+      dayClasses.forEach(cls => {
+        let placed = false;
+        for (let i = 0; i < columns.length; i++) {
+          const lastClassInCol = columns[i][columns[i].length - 1];
+          // Provera da li se preklapaju - ako novi pocinje tačno kad stari završi ili kasnije, onda mogu u istu kolonu
+          if (new Date(lastClassInCol.endTime).getTime() <= new Date(cls.startTime).getTime()) {
+            columns[i].push(cls);
+            cls._column = i;
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          columns.push([cls]);
+          cls._column = columns.length - 1;
+        }
+      });
+      
+      dayClasses.forEach(cls => {
+        cls._totalColumns = columns.length;
+        cls._dayIndex = Number(dayIndex);
+        result.push(cls);
+      });
+    });
+    return result;
+  }, [weeklyClasses, weekDays]);
+
   if (isLoading) return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
@@ -615,7 +662,7 @@ export default function Schedule() {
               ))}
 
               {/* Blokovi za Časove */}
-              {weeklyClasses?.map((cls: any) => {
+              {classesWithLayout?.map((cls: any) => {
                 const startDate = new Date(cls.startTime);
                 const endDate = new Date(cls.endTime);
                 
@@ -623,18 +670,19 @@ export default function Schedule() {
                 const startMin = startDate.getMinutes();
                 const durationMinutes = (endDate.getTime() - startDate.getTime()) / 60000;
                 
-                // Odredi u koju kolonu ide (1 do 7, pri čemu 1 odgovara Ponedeljku, indeks 0 u weekDays)
-                const dayIndex = weekDays.findIndex(d => isSameDay(d, startDate));
-                if (dayIndex === -1) return null;
-
                 if (startHour < 8 || startHour >= 23) return null;
 
                 // 64px header + 24px margina (mt-6) na prvoj liniji = 88px
                 const topPosition = (startHour - 8) * 80 + (startMin / 60) * 80 + 88; 
                 const height = (durationMinutes / 60) * 80;
                 
-                // Izračunaj left i width u odnosu na tačno dostupni prostor za dane (cela širina minus 4rem leva margina)
-                const leftRatio = dayIndex / 7;
+                const leftRatio = cls._dayIndex / 7;
+                const totalCols = cls._totalColumns || 1;
+                const col = cls._column || 0;
+                
+                const colWidth = `((100% - 4rem) / 7)`;
+                const overlapWidth = `calc(${colWidth} / ${totalCols} - 6px)`;
+                const overlapLeftOffset = `calc(${colWidth} / ${totalCols} * ${col})`;
 
                 return (
                   <div 
@@ -643,8 +691,8 @@ export default function Schedule() {
                     style={{ 
                       top: `${topPosition}px`, 
                       height: `${height}px`,
-                      left: `calc(4rem + (100% - 4rem) * ${leftRatio} + 4px)`, // Tačno pozicioniranje u kolonu
-                      width: `calc((100% - 4rem) / 7 - 8px)`, // Tačna širina kolone minus padding
+                      left: `calc(4rem + (100% - 4rem) * ${leftRatio} + ${overlapLeftOffset} + 3px)`, 
+                      width: overlapWidth,
                       backgroundColor: cls.status === 'ZAVRSEN' ? 'rgba(30, 41, 59, 0.9)' : 
                                        cls.status === 'OTKAZAN' ? 'rgba(239, 68, 68, 0.1)' : 
                                        'rgba(16, 185, 129, 0.1)',

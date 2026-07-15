@@ -25,6 +25,14 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       alert('Vaš nalog je deaktiviran. Odjavljujemo vas sa sistema.');
     }
   }
+
+  if (result.error && result.error.status === 401) {
+    const errorData = result.error.data as any;
+    if (errorData?.error === 'NalogObrisan') {
+      api.dispatch(logout());
+      alert('Vaš nalog više ne postoji u sistemu. Bićete izlogovani.');
+    }
+  }
   
   return result;
 };
