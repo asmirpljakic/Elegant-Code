@@ -355,7 +355,7 @@ export const cancelClass = async (req: Request, res: Response): Promise<void> =>
 
         let messageText = `Vaš čas (${classSession.courseName} nivo) je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`;
         if (reason && reason.trim() !== '') {
-          messageText = `Vaš čas (${classSession.courseName} nivo) je otkazan. Razlog: "${reason.trim()}". Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu.`;
+          messageText = `Vaš čas (${classSession.courseName} nivo) je otkazan. ${reason.trim()} Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu.`;
         }
 
         // Notifikacija za učenika
