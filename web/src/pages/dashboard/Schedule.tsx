@@ -58,6 +58,7 @@ export default function Schedule() {
   const [endTime, setEndTime] = useState('');
   const [topic, setTopic] = useState('');
   const [meetingLink, setMeetingLink] = useState('');
+  const [cancelReason, setCancelReason] = useState('');
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   
   // Novi state za ponavljajuće časove
@@ -136,6 +137,7 @@ export default function Schedule() {
     // Ako zelimo da imamo formu za update, popunjavamo
     setTopic(cls.topic || '');
     setMeetingLink(cls.meetingLink || '');
+    setCancelReason('');
     setStartTime(cls.startTime);
     setEndTime(cls.endTime);
     setIsClassDetailsModalOpen(true);
@@ -154,7 +156,7 @@ export default function Schedule() {
   const handleCancel = async () => {
     if (!selectedClass || !window.confirm('Da li ste sigurni da želite da OTKAŽETE ovaj čas? Učenicima će automatski biti dodat 1 čas za nadoknadu.')) return;
     try {
-      await cancelClass(selectedClass._id).unwrap();
+      await cancelClass({ id: selectedClass._id, reason: cancelReason }).unwrap();
       setIsClassDetailsModalOpen(false);
     } catch (error: any) {
       console.error(error);
@@ -1093,6 +1095,17 @@ export default function Schedule() {
                 <div className="pt-6 border-t border-slate-800">
                   <h4 className="text-sm font-semibold text-orange-400 mb-3">Otkazivanje časa (Nadoknada)</h4>
                   <p className="text-xs text-slate-400 mb-4">Ako otkažete čas, on ostaje u bazi kao "OTKAZAN", a svim učenicima iz ovog časa će se automatski dodati 1 čas za nadoknadu.</p>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Razlog otkazivanja (opciono)</label>
+                    <textarea 
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      placeholder="Upišite razlog koji će biti poslat učenicima (npr. Zbog bolesti...)"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-orange-500/50 outline-none resize-none h-20"
+                    />
+                  </div>
+
                   <Button onClick={handleCancel} isLoading={isCanceling} variant="outline" className="w-full border-orange-500/50 text-orange-400 hover:bg-orange-500/10">
                     <X className="w-4 h-4 mr-2" /> Otkaži Čas i Dodaj Nadoknadu
                   </Button>

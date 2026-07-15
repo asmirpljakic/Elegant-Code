@@ -161,10 +161,11 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['ClassSession', 'User', 'Users'], // Update korisnika zbog XP poena
     }),
-    cancelClass: builder.mutation<void, string>({
-      query: (id) => ({
+    cancelClass: builder.mutation<void, { id: string, reason?: string }>({
+      query: ({ id, reason }) => ({
         url: `/schedule/${id}/cancel`,
         method: 'PUT',
+        body: { reason },
       }),
       invalidatesTags: ['ClassSession', 'User', 'Users'],
     }),

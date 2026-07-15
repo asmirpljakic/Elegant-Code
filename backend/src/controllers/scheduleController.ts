@@ -311,6 +311,7 @@ const rollbackStudentProgress = async (classSession: any) => {
 export const cancelClass = async (req: Request, res: Response): Promise<void> => {
   try {
     const classId = req.params.id;
+    const { reason } = req.body || {};
     const classSession = await ClassSession.findById(classId);
     
     if (!classSession) {
@@ -352,11 +353,16 @@ export const cancelClass = async (req: Request, res: Response): Promise<void> =>
         student.markModified('progress');
         await student.save();
 
+        let messageText = `Vaš čas (${classSession.courseName} nivo) je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`;
+        if (reason && reason.trim() !== '') {
+          messageText = `Vaš čas (${classSession.courseName} nivo) je otkazan. Razlog: "${reason.trim()}". Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu.`;
+        }
+
         // Notifikacija za učenika
         await Notification.create({
           userId: student._id,
           title: 'Čas je Otkazan ❌',
-          message: `Vaš čas (${classSession.courseName} nivo) je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
+          message: messageText,
           type: 'WARNING'
         });
       }
