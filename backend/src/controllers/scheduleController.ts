@@ -356,7 +356,7 @@ export const cancelClass = async (req: Request, res: Response): Promise<void> =>
         await Notification.create({
           userId: student._id,
           title: 'Čas je Otkazan ❌',
-          message: `Tvoj čas (${classSession.courseName} nivo) je otkazan. Dodat ti je 1 čas za nadoknadu!`,
+          message: `Vaš čas (${classSession.courseName} nivo) je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
           type: 'WARNING'
         });
       }
@@ -412,7 +412,7 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
             const notifications = classSession.students.map((st: any) => ({
               userId: st.studentId,
               title: 'Ciklus Časova Otkazan',
-              message: `Otkazan je vaš predstojeći ciklus časova (${classSession.courseName} nivo).`,
+              message: `Otkazan je vaš predstojeći ciklus časova (${classSession.courseName} nivo). Bez brige, ukoliko imate pravo na nadoknadu, profesor će uskoro zakazati nove termine, o čemu ćete biti obavešteni novom notifikacijom!`,
               type: 'WARNING'
             }));
             await Notification.insertMany(notifications);
@@ -434,7 +434,7 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
             const notifications = classSession.students.map((st: any) => ({
               userId: st.studentId,
               title: 'Čas Otkazan',
-              message: `Otkazan je vaš zakazani čas za ${classSession.courseName} nivo.`,
+              message: `Vaš zakazani čas (${classSession.courseName} nivo) je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
               type: 'WARNING'
             }));
             await Notification.insertMany(notifications);
