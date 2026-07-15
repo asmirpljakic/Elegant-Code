@@ -699,8 +699,7 @@ export default function Schedule() {
                       backgroundColor: cls.status === 'ZAVRSEN' ? 'rgba(30, 41, 59, 0.9)' : 
                                        cls.status === 'OTKAZAN' ? 'rgba(239, 68, 68, 0.1)' : 
                                        'rgba(16, 185, 129, 0.1)',
-                      backdropFilter: 'blur(4px)',
-                      zIndex: 10
+                      backdropFilter: 'blur(4px)'
                     }}
                     onClick={() => {
                       if (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.id === cls.profesorId?._id) {

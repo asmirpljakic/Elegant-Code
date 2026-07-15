@@ -306,7 +306,7 @@ export default function DashboardIndex() {
     return <ProfessorDashboard />;
   }
 
-  if (user?.role === 'UCENIK' || user?.role === 'KLIJENT') {
+  if (['UCENIK', 'KLIJENT'].includes(user?.role as string)) {
     return <StudentDashboard />;
   }
 

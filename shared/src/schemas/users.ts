@@ -38,6 +38,7 @@ export interface UserResponse {
     xp: number;
     makeupClassesOwed: number;
   };
+  isActive?: boolean;
   lastLoginAt?: Date;
   membershipExpiresAt?: Date;
   createdAt: Date;

@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react"
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
+  variant?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
