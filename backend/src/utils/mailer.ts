@@ -49,6 +49,11 @@ export const sendOTP = async (to: string, otp: string) => {
   };
 
   try {
+    // ISPIS OTP-a U KONZOLU ZA SVAKI SLUČAJ (ZBOG RENDER BLOKADE)
+    console.log(`\n=========================================`);
+    console.log(`🔔 OTP KOD ZA ${to} JE: ${otp}`);
+    console.log(`=========================================\n`);
+
     await transporter.sendMail(mailOptions);
     console.log(`OTP poslata na ${to}`);
   } catch (error) {
