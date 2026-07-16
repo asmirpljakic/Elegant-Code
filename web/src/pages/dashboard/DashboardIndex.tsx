@@ -17,7 +17,9 @@ export default function DashboardIndex() {
   
   const { data: analyticsData, isLoading: analyticsLoading } = useGetAnalyticsQuery(undefined, {
     skip: user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN',
-    refetchOnMountOrArgChange: true
+    pollingInterval: 5000,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true
   });
 
   const { data: scheduleData, isLoading: scheduleLoading } = useGetScheduleQuery(undefined, {

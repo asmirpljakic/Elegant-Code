@@ -32,13 +32,17 @@ export default function UsersList() {
   // Debounce pretrage na 300ms
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  // RTK Query sa parametrima
+  // RTK Query sa parametrima i pollingom
   const { data, isLoading, error, isFetching } = useGetUsersQuery({
     page,
     limit: 10,
     search: debouncedSearch || undefined,
     role: filterRole !== 'ALL' ? filterRole : undefined,
     activePackage: filterPackage !== 'ALL' ? filterPackage : undefined
+  }, {
+    pollingInterval: 5000,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true
   });
 
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
