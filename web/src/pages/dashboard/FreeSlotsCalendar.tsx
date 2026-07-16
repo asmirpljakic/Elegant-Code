@@ -9,8 +9,8 @@ interface FreeSlotsCalendarProps {
 }
 
 export default function FreeSlotsCalendar({ scheduleList, profesorId, onSlotClick }: FreeSlotsCalendarProps) {
-  // Radno vreme kalendara od 09:00 do 21:00 (12 slotova)
-  const HOURS = Array.from({ length: 12 }, (_, i) => i + 9);
+  // Radno vreme kalendara od 08:00 do 22:00 (15 slotova)
+  const HOURS = Array.from({ length: 15 }, (_, i) => i + 8);
   
   // Dani u nedelji
   const today = new Date();
