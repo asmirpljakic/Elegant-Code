@@ -556,9 +556,9 @@ export default function Schedule() {
                         <Button 
                           variant="outline"
                           onClick={() => openClassDetailsModal(cls)}
-                          className="w-full flex items-center justify-center border-primary text-primary hover:bg-primary/10"
+                          className="w-full flex items-center justify-center border-slate-600 bg-slate-800 text-white hover:bg-slate-700 hover:border-slate-500 transition-colors"
                         >
-                          <Edit className="w-4 h-4 mr-2" />
+                          <Edit className="w-4 h-4 mr-2 text-slate-300" />
                           Upravljaj / Završi
                         </Button>
                       )}
