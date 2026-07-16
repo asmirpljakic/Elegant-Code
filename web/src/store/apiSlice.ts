@@ -85,6 +85,10 @@ export const apiSlice = createApi({
       },
       providesTags: ['Users'],
     }),
+    getPublicProfessors: builder.query<any[], void>({
+      query: () => '/users/professors/public',
+      providesTags: ['Users'],
+    }),
     updateUser: builder.mutation<UserResponse, { id: string; data: UpdateUserFormData }>({
       query: ({ id, data }) => ({
         url: `/users/${id}`,
@@ -273,5 +277,6 @@ export const {
   useApproveCertificateMutation,
   useVerifyOtpMutation,
   useResendOtpMutation,
-  useScheduleMakeupClassMutation
+  useScheduleMakeupClassMutation,
+  useGetPublicProfessorsQuery
 } = apiSlice;

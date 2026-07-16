@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calendar, UserCheck, BookOpen, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
-import { useGetUsersQuery, useGetProfessorBusySlotsQuery, useScheduleTrialClassMutation } from '../../store/apiSlice';
+import { useGetPublicProfessorsQuery, useGetProfessorBusySlotsQuery, useScheduleTrialClassMutation } from '../../store/apiSlice';
 import FreeSlotsCalendar from './FreeSlotsCalendar';
 
 interface TrialClassModalProps {
@@ -15,14 +15,14 @@ export default function TrialClassModal({ isOpen, onClose, onSuccess }: TrialCla
   const [profesorId, setProfesorId] = useState('');
   const [error, setError] = useState('');
 
-  const { data: allUsersData, isLoading: isLoadingUsers } = useGetUsersQuery(undefined, { skip: !isOpen });
+  const { data: professors = [], isLoading: isLoadingUsers } = useGetPublicProfessorsQuery(undefined, { skip: !isOpen });
   const { data: busySlots = [], isLoading: isLoadingSlots } = useGetProfessorBusySlotsQuery(profesorId, { skip: !profesorId || step !== 3 });
   
   const [scheduleTrial, { isLoading: isScheduling }] = useScheduleTrialClassMutation();
 
   if (!isOpen) return null;
 
-  const professors = allUsersData?.users?.filter((u: any) => u.role === 'PROFESOR') || [];
+  // Profesori se sada direktno učitavaju sa /professors/public
 
   // Prilagođavamo busySlots da bi ih FreeSlotsCalendar prepoznao
   const formattedScheduleForCalendar = busySlots.map((slot: any) => ({

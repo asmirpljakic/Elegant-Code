@@ -1,11 +1,14 @@
 import express from 'express';
-import { getUsers, updateUser, createUser, getUserProfile, deleteUser, toggleUserStatus } from '../controllers/userController';
+import { getUsers, updateUser, createUser, getUserProfile, deleteUser, toggleUserStatus, getPublicProfessors } from '../controllers/userController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
 // Dohvatanje sopstvenog profila
 router.route('/me').get(protect, getUserProfile);
+
+// Dohvatanje javnih profesora (za probne časove, dostupno svima)
+router.route('/professors/public').get(protect, getPublicProfessors);
 
 // Svi od navedenih mogu da listaju korisnike i dodaju nove (kontroler ograničava ko šta sme)
 router.route('/')

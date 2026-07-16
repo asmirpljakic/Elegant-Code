@@ -413,3 +413,17 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ error: 'Greška pri izmeni statusa korisnika.' });
   }
 };
+
+// @desc    Dohvati samo javne podatke o profesorima (za zakazivanje probnog časa)
+// @route   GET /api/users/professors/public
+// @access  Private (Svi ulogovani korisnici)
+export const getPublicProfessors = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const professors = await User.find({ role: 'PROFESOR', isActive: true })
+      .select('_id firstName lastName email');
+    
+    res.json(professors);
+  } catch (error) {
+    res.status(500).json({ error: 'Greška pri učitavanju profesora.' });
+  }
+};
