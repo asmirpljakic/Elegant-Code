@@ -548,6 +548,26 @@ export default function Schedule() {
                         </Button>
                       )}
 
+                      {cls.status === 'OTKAZAN' && (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') && (
+                        <Button 
+                          variant="outline"
+                          onClick={async () => {
+                            if (window.confirm('Da li ste sigurni da želite obrisati ovaj otkazani čas? Ovo se ne može poništiti.')) {
+                              try {
+                                await deleteClass({ id: cls._id }).unwrap();
+                              } catch (error) {
+                                alert('Greška pri brisanju časa');
+                              }
+                            }
+                          }}
+                          className="w-full flex items-center justify-center border-red-500/50 text-red-500 hover:bg-red-500/10 mt-2"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Obriši Otkazani Čas
+                        </Button>
+                      )}
+
+
                       {cls.status === 'ZAVRSEN' && (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.id === cls.profesorId?._id) && (
                         <Button 
                           variant="outline"
