@@ -40,6 +40,27 @@ export const getSchedule = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+// Helper za pretvaranje lokalnog vremena u tačan UTC zavisno od datuma (DST)
+const getCETDate = (date: Date, timeString: string): Date => {
+  const dateStr = date.toISOString().split('T')[0];
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Belgrade',
+    timeZoneName: 'shortOffset'
+  });
+  const parts = formatter.formatToParts(date);
+  const tzPart = parts.find((p: any) => p.type === 'timeZoneName');
+  let offset = '+02:00'; // Fallback na letnje vreme
+  if (tzPart && tzPart.value) {
+    const match = tzPart.value.match(/GMT([+-])(\d+)/);
+    if (match) {
+      const sign = match[1];
+      const hours = match[2].padStart(2, '0');
+      offset = `${sign}${hours}:00`;
+    }
+  }
+  return new Date(`${dateStr}T${timeString}:00${offset}`);
+};
+
 // @desc    Zakaži novi čas
 // @route   POST /api/schedule
 // @access  Private/Admin
@@ -135,22 +156,16 @@ export const createClass = async (req: Request, res: Response): Promise<void> =>
     // Počinjemo od datuma/vremena startTime i kreiramo časove u budućnosti
     // Iteriramo kroz dane počevši od start-a dok ne pređemo limitDate
     let currentDate = new Date(start);
-    // Postavljamo vreme na 00:00 da bismo tačno dodali sate i minute iz dayConfig-a
-    currentDate.setHours(0, 0, 0, 0);
+    // Postavljamo vreme na 12:00 UTC da izbegnemo probleme sa prelaskom dana zbog timezone-a
+    currentDate.setUTCHours(12, 0, 0, 0);
 
     while (currentDate <= limitDate) {
       if (recurringDays && recurringDays.length > 0) {
-        const dayConfig = recurringDays.find((d: any) => d.dayOfWeek === currentDate.getDay());
+        const dayConfig = recurringDays.find((d: any) => d.dayOfWeek === currentDate.getUTCDay());
         
         if (dayConfig) {
-          const [startHour, startMinute] = dayConfig.startTime.split(':').map(Number);
-          const [endHour, endMinute] = dayConfig.endTime.split(':').map(Number);
-          
-          const cStart = new Date(currentDate);
-          cStart.setHours(startHour, startMinute, 0, 0);
-          
-          const cEnd = new Date(currentDate);
-          cEnd.setHours(endHour, endMinute, 0, 0);
+          const cStart = getCETDate(currentDate, dayConfig.startTime);
+          const cEnd = getCETDate(currentDate, dayConfig.endTime);
           
           // Za svaki termin proveravamo preklapanje
           const isOverlap = await checkOverlap(cStart, cEnd, profesorId, studentIds);
@@ -166,7 +181,7 @@ export const createClass = async (req: Request, res: Response): Promise<void> =>
         }
       }
       // Dodaj jedan dan
-      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     }
 
     if (classesToCreate.length === 0) {
@@ -571,15 +586,15 @@ export const scheduleMakeupClass = async (req: Request, res: Response): Promise<
       return;
     }
 
-    // Provera vremena
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [endHour, endMinute] = endTime.split(':').map(Number);
-
-    const sDate = new Date(startDate);
-    sDate.setHours(startHour, startMinute, 0, 0);
-
-    const eDate = new Date(startDate);
-    eDate.setHours(endHour, endMinute, 0, 0);
+    // Koristimo pune ISO datume koji stižu sa frontenda (kako bi izbegli UTC probleme na serveru)
+    let sDate = new Date(startTime);
+    let eDate = new Date(endTime);
+    
+    // Fallback ako frontend pošalje u starom formatu (npr. '18:00')
+    if (startTime.includes(':') && startTime.length <= 5) {
+      sDate = new Date(`${startDate}T${startTime}:00+02:00`); // Prisiljavamo CET/CEST (Evropa)
+      eDate = new Date(`${startDate}T${endTime}:00+02:00`);
+    }
 
     const overlapQuery = {
       status: { $ne: 'OTKAZAN' },
