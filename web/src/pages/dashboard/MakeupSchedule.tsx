@@ -127,6 +127,7 @@ export default function MakeupSchedule() {
         initialDate={initialMakeupDate}
         initialStartTime={initialMakeupStartTime}
         initialEndTime={initialMakeupEndTime}
+        initialProfesorId={filterUserId === 'ALL' ? '' : filterUserId}
       />
     </div>
   );

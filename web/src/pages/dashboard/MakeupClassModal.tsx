@@ -11,9 +11,10 @@ interface MakeupClassModalProps {
   initialDate?: string;
   initialStartTime?: string;
   initialEndTime?: string;
+  initialProfesorId?: string;
 }
 
-export default function MakeupClassModal({ isOpen, onClose, initialDate, initialStartTime, initialEndTime }: MakeupClassModalProps) {
+export default function MakeupClassModal({ isOpen, onClose, initialDate, initialStartTime, initialEndTime, initialProfesorId }: MakeupClassModalProps) {
   const { user } = useSelector((state: RootState) => state.auth);
   
   // Fetch users to find students with makeup classes owed
@@ -41,8 +42,13 @@ export default function MakeupClassModal({ isOpen, onClose, initialDate, initial
       setCourseName('OSNOVNI');
       setTopic('[NADOKNADA]');
       setError('');
+      if (initialProfesorId) {
+        setProfesorId(initialProfesorId);
+      } else if (user?.role === 'PROFESOR') {
+        setProfesorId(user.id);
+      }
     }
-  }, [isOpen, initialDate, initialStartTime, initialEndTime]);
+  }, [isOpen, initialDate, initialStartTime, initialEndTime, initialProfesorId, user]);
 
   if (!isOpen) return null;
 
@@ -135,7 +141,8 @@ export default function MakeupClassModal({ isOpen, onClose, initialDate, initial
                     required
                     value={profesorId}
                     onChange={(e) => setProfesorId(e.target.value)}
-                    className="w-full h-12 bg-slate-950 border border-slate-800 rounded-xl px-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
+                    disabled={!!initialProfesorId}
+                    className="w-full h-12 bg-slate-950 border border-slate-800 rounded-xl px-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Izaberi profesora</option>
                     {professors.map((p: any) => (
