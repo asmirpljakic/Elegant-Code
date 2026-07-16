@@ -106,13 +106,13 @@ export default function FreeSlotsCalendar({ scheduleList, profesorId, onSlotClic
                       }}
                       className={`h-12 rounded-xl border transition-all duration-200 flex items-center justify-center ${
                         isFree 
-                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.05)]' 
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500 hover:text-emerald-300 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.05)]' 
                           : 'bg-slate-950/80 border-slate-800/50 text-slate-700 cursor-not-allowed'
                       }`}
                       title={isFree ? 'Slobodan termin - Zakaži' : 'Zauzet termin ili prošlost'}
                     >
                       {isFree ? (
-                        <span className="text-xs font-medium opacity-0 hover:opacity-100 transition-opacity">Slobodno</span>
+                        <span className="text-xs font-semibold">{hour.toString().padStart(2, '0')}:00</span>
                       ) : (
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>
                       )}
