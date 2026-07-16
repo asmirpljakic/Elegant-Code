@@ -353,9 +353,12 @@ export const cancelClass = async (req: Request, res: Response): Promise<void> =>
         student.markModified('progress');
         await student.save();
 
-        let messageText = `Vaš čas (${classSession.courseName} nivo) je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`;
+        const d = new Date(classSession.startTime);
+        const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}. u ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}h`;
+
+        let messageText = `Vaš čas zakazan za ${formattedDate} je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`;
         if (reason && reason.trim() !== '') {
-          messageText = `Vaš čas (${classSession.courseName} nivo) je otkazan. ${reason.trim()} Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu.`;
+          messageText = `Vaš čas zakazan za ${formattedDate} je otkazan. ${reason.trim()} Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu.`;
         }
 
         // Notifikacija za učenika
@@ -437,10 +440,13 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
       if (classSession.status === 'ZAKAZAN' && classSession.students && classSession.students.length > 0) {
         setTimeout(async () => {
           try {
+            const d = new Date(classSession.startTime);
+            const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}. u ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}h`;
+
             const notifications = classSession.students.map((st: any) => ({
               userId: st.studentId,
               title: 'Čas Otkazan',
-              message: `Vaš zakazani čas (${classSession.courseName} nivo) je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
+              message: `Vaš čas zakazan za ${formattedDate} je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
               type: 'WARNING'
             }));
             await Notification.insertMany(notifications);
