@@ -1,10 +1,12 @@
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // false za port 587, true za port 465
   auth: {
     user: process.env.EMAIL_USER || 'elegantcodegroup@gmail.com',
-    pass: process.env.EMAIL_PASS || '', // App password goes here
+    pass: process.env.EMAIL_PASS || '', // App password
   },
 });
 
