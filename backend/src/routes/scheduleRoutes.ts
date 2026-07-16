@@ -1,5 +1,5 @@
 import express from 'express';
-import { getSchedule, createClass, completeClass, cancelClass, deleteClass, updateClass, deleteCompletedClasses } from '../controllers/scheduleController';
+import { getSchedule, createClass, completeClass, cancelClass, deleteClass, updateClass, deleteCompletedClasses, scheduleMakeupClass } from '../controllers/scheduleController';
 import { protect, admin, authorize } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -10,6 +10,8 @@ router.use(protect);
 router.route('/')
   .get(getSchedule)
   .post(authorize('SUPER_ADMIN', 'ADMIN', 'PROFESOR'), createClass);
+
+router.post('/makeup', authorize('SUPER_ADMIN', 'ADMIN', 'PROFESOR'), scheduleMakeupClass);
 
 router.delete('/completed', authorize('SUPER_ADMIN', 'ADMIN', 'PROFESOR'), deleteCompletedClasses);
 

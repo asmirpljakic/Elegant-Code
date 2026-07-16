@@ -131,6 +131,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['ClassSession'],
     }),
+    scheduleMakeupClass: builder.mutation<void, any>({
+      query: (data) => ({
+        url: '/schedule/makeup',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ClassSession', 'User', 'Users'],
+    }),
     updateClass: builder.mutation<void, { id: string, data: any, all?: boolean }>({
       query: ({ id, data, all }) => ({
         url: `/schedule/${id}${all ? '?all=true' : ''}`,
@@ -251,5 +259,6 @@ export const {
   useGetStudentCertificatesQuery,
   useApproveCertificateMutation,
   useVerifyOtpMutation,
-  useResendOtpMutation
+  useResendOtpMutation,
+  useScheduleMakeupClassMutation
 } = apiSlice;

@@ -13,6 +13,7 @@ export interface IClassSession extends Document {
   status: 'ZAKAZAN' | 'U_TOKU' | 'ZAVRSEN' | 'OTKAZAN';
   meetingLink?: string;
   recurringGroupId?: string;
+  isMakeup?: boolean;
 }
 
 const ClassSessionSchema: Schema = new Schema({
@@ -31,7 +32,8 @@ const ClassSessionSchema: Schema = new Schema({
     default: 'ZAKAZAN'
   },
   meetingLink: { type: String },
-  recurringGroupId: { type: String }
+  recurringGroupId: { type: String },
+  isMakeup: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Indeks za brze pretrage termina (npr. Cron job za obaveštavanje 1h pred čas)

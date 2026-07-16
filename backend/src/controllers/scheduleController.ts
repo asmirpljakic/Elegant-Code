@@ -552,3 +552,81 @@ export const updateClass = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Greška pri izmeni časa' });
   }
 };
+
+// @desc    Zakaži čas nadoknade
+// @route   POST /api/schedule/makeup
+// @access  Private/Profesor ili Admin
+export const scheduleMakeupClass = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { courseName, studentIds, startDate, startTime, endTime, topic } = req.body;
+    const profesorId = req.user?.role === 'PROFESOR' ? req.user._id : req.body.profesorId;
+
+    if (!profesorId) {
+      res.status(400).json({ error: 'Morate izabrati profesora.' });
+      return;
+    }
+
+    if (!studentIds || studentIds.length === 0) {
+      res.status(400).json({ error: 'Morate izabrati barem jednog učenika za nadoknadu.' });
+      return;
+    }
+
+    // Provera vremena
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+
+    const sDate = new Date(startDate);
+    sDate.setHours(startHour, startMinute, 0, 0);
+
+    const eDate = new Date(startDate);
+    eDate.setHours(endHour, endMinute, 0, 0);
+
+    const isOverlap = await checkOverlap(sDate, eDate, profesorId, studentIds);
+    if (isOverlap) {
+      res.status(400).json({ error: 'Izabrani termin se preklapa sa postojećim časom.' });
+      return;
+    }
+
+    // Proveri da li svi prosleđeni učenici imaju pravo na nadoknadu i skini im po jedan čas
+    const validStudents = [];
+    for (const stId of studentIds) {
+      const student = await User.findById(stId);
+      if (student && student.progress && (student.progress.makeupClassesOwed || 0) > 0) {
+        student.progress.makeupClassesOwed -= 1;
+        student.markModified('progress');
+        await student.save();
+        validStudents.push({ studentId: student._id, attended: false });
+      }
+    }
+
+    if (validStudents.length === 0) {
+      res.status(400).json({ error: 'Nijedan od izabranih učenika nema pravo na nadoknadu.' });
+      return;
+    }
+
+    const newClass = await ClassSession.create({
+      courseName,
+      profesorId,
+      students: validStudents,
+      startTime: sDate,
+      endTime: eDate,
+      topic: topic || '[NADOKNADA]',
+      status: 'ZAKAZAN',
+      isMakeup: true
+    });
+
+    // Notifikacije učenicima
+    const notifications = validStudents.map(st => ({
+      userId: st.studentId,
+      title: 'Zakazana Nadoknada 📘',
+      message: `Zakazan vam je čas za NADOKNADU dana ${sDate.getDate().toString().padStart(2, '0')}.${(sDate.getMonth() + 1).toString().padStart(2, '0')}. u ${startTime}h. (${courseName} nivo)`,
+      type: 'INFO'
+    }));
+    await Notification.insertMany(notifications);
+
+    res.status(201).json(newClass);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Greška pri zakazivanju nadoknade.' });
+  }
+};

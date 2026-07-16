@@ -3,6 +3,7 @@ import { useGetScheduleQuery, useCreateClassMutation, useCompleteClassMutation, 
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { Button } from '../../components/ui/Button';
+import MakeupClassModal from './MakeupClassModal';
 import { Calendar, Clock, Video, Users, User as UserIcon, CheckCircle2, Plus, X, Loader2, ChevronLeft, ChevronRight, List, Edit, Trash2, Search, Filter } from 'lucide-react';
 import { format, addDays, subDays, isSameDay, startOfDay, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval } from 'date-fns';
 import { srLatn } from 'date-fns/locale';
@@ -35,6 +36,7 @@ export default function Schedule() {
   const [deleteCompletedClasses, { isLoading: isDeletingCompleted }] = useDeleteCompletedClassesMutation();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isMakeupModalOpen, setIsMakeupModalOpen] = useState(false);
   const [isClassDetailsModalOpen, setIsClassDetailsModalOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<any>(null);
   
@@ -439,6 +441,18 @@ export default function Schedule() {
             </Button>
           )}
 
+          {/* Dugme za nadoknadu */}
+          {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'PROFESOR') && (
+            <Button 
+              onClick={() => setIsMakeupModalOpen(true)}
+              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white border-none ml-2"
+              title="Zakaži nadoknadu učeniku"
+            >
+              <Calendar className="w-5 h-5 md:mr-2" />
+              <span className="hidden md:inline">Zakaži Nadoknadu</span>
+            </Button>
+          )}
+
           {/* Dugme za brisanje svih završenih */}
           {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'PROFESOR') && (
             <Button 
@@ -475,7 +489,9 @@ export default function Schedule() {
             ) : (
               currentList.map((cls) => (
                 <div key={cls._id} className={`bg-slate-900 border rounded-2xl p-6 transition-all ${
-                  cls.status === 'ZAVRSEN' ? 'border-slate-800 opacity-75' : 'border-primary/20 hover:border-primary/40'
+                  cls.status === 'ZAVRSEN' ? 'border-slate-800 opacity-75' : 
+                  cls.isMakeup ? 'border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:border-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]' :
+                  'border-primary/20 hover:border-primary/40'
                 }`}>
                   <div className="flex flex-col md:flex-row justify-between gap-6">
                     <div className="space-y-4 flex-1">
@@ -720,7 +736,9 @@ export default function Schedule() {
                       zIndex: 10,
                       backgroundColor: cls.status === 'ZAVRSEN' ? 'rgba(30, 41, 59, 0.9)' : 
                                        cls.status === 'OTKAZAN' ? 'rgba(239, 68, 68, 0.1)' : 
+                                       cls.isMakeup ? 'rgba(59, 130, 246, 0.15)' :
                                        'rgba(16, 185, 129, 0.1)',
+                      borderColor: cls.isMakeup ? 'rgba(59, 130, 246, 0.4)' : undefined,
                       backdropFilter: 'blur(4px)'
                     }}
                     onClick={() => {
@@ -1153,6 +1171,12 @@ export default function Schedule() {
           </div>
         </div>
       )}
+
+      <MakeupClassModal 
+        isOpen={isMakeupModalOpen} 
+        onClose={() => setIsMakeupModalOpen(false)} 
+      />
+
     </div>
   );
 }
