@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, BookOpen, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useGetUsersQuery, useScheduleMakeupClassMutation } from '../../store/apiSlice';
 import { useSelector } from 'react-redux';
@@ -8,9 +8,12 @@ import { Button } from '../../components/ui/Button';
 interface MakeupClassModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialDate?: string;
+  initialStartTime?: string;
+  initialEndTime?: string;
 }
 
-export default function MakeupClassModal({ isOpen, onClose }: MakeupClassModalProps) {
+export default function MakeupClassModal({ isOpen, onClose, initialDate, initialStartTime, initialEndTime }: MakeupClassModalProps) {
   const { user } = useSelector((state: RootState) => state.auth);
   
   // Fetch users to find students with makeup classes owed
@@ -28,6 +31,18 @@ export default function MakeupClassModal({ isOpen, onClose }: MakeupClassModalPr
   const [endTime, setEndTime] = useState('');
   const [topic, setTopic] = useState('[NADOKNADA]');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setDate(initialDate || '');
+      setStartTime(initialStartTime || '');
+      setEndTime(initialEndTime || '');
+      setSelectedStudentId('');
+      setCourseName('OSNOVNI');
+      setTopic('[NADOKNADA]');
+      setError('');
+    }
+  }, [isOpen, initialDate, initialStartTime, initialEndTime]);
 
   if (!isOpen) return null;
 
