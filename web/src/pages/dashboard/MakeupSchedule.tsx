@@ -54,7 +54,7 @@ export default function MakeupSchedule() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
                 type="text"
-                placeholder="Pretraži profesora ili učenika..."
+                placeholder="Pretraži profesora..."
                 value={userSearchTerm}
                 onFocus={() => setIsUserDropdownOpen(true)}
                 onChange={(e) => {
@@ -83,7 +83,7 @@ export default function MakeupSchedule() {
             {isUserDropdownOpen && allUsers?.users && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                 {allUsers.users
-                  .filter(u => u.role !== 'GOST')
+                  .filter(u => u.role === 'PROFESOR')
                   .filter(u => `${u.firstName} ${u.lastName}`.toLowerCase().includes(userSearchTerm.toLowerCase()))
                   .map(u => (
                     <button
