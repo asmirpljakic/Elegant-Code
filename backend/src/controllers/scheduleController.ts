@@ -140,7 +140,7 @@ export const createClass = async (req: Request, res: Response): Promise<void> =>
 
     while (currentDate <= limitDate) {
       if (recurringDays && recurringDays.length > 0) {
-        const dayConfig = recurringDays.find(d => d.dayOfWeek === currentDate.getDay());
+        const dayConfig = recurringDays.find((d: any) => d.dayOfWeek === currentDate.getDay());
         
         if (dayConfig) {
           const [startHour, startMinute] = dayConfig.startTime.split(':').map(Number);
