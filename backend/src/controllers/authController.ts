@@ -69,14 +69,12 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
       description: `Novi učenik ${firstName} ${lastName} se prijavio za školu programiranja. Čeka verifikaciju emaila.`
     });
 
-    // Slanje OTP emaila (koristimo novi mailer util)
-    const { sendOTP } = await import('../utils/mailer');
-    try {
-      await sendOTP(email, otpCode);
-    } catch (mailErr) {
-      console.error('Neuspešno slanje OTP emaila prilikom registracije:', mailErr);
-      // Nećemo prekinuti tok, korisnik može zatražiti ponovno slanje
-    }
+    // Slanje OTP emaila (koristimo novi mailer util) u pozadini (asinhrono) kako ne bismo blokirali odgovor
+    import('../utils/mailer').then(({ sendOTP }) => {
+      sendOTP(email, otpCode).catch(mailErr => {
+        console.error('Neuspešno slanje OTP emaila prilikom registracije:', mailErr);
+      });
+    });
 
     if (user) {
       res.status(201).json({
