@@ -112,7 +112,7 @@ export default function FreeSlotsCalendar({ scheduleList, profesorId, onSlotClic
                       title={isFree ? 'Slobodan termin - Zakaži' : 'Zauzet termin ili prošlost'}
                     >
                       {isFree ? (
-                        <span className="text-xs font-semibold">{hour.toString().padStart(2, '0')}:00</span>
+                        <span className="text-sm font-semibold text-white drop-shadow-md">{hour.toString().padStart(2, '0')}:00</span>
                       ) : (
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>
                       )}
