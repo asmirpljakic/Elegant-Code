@@ -4,13 +4,16 @@ import type { RootState } from '../../store/store';
 import StudentStats from "./StudentStats";
 import ProfessorDashboard from "./ProfessorDashboard";
 import StudentDashboard from "./StudentDashboard";
-import { Loader2, Activity, Award, TrendingUp, Users, DollarSign, Calendar, Clock, Video, CheckCircle } from 'lucide-react';
+import { Loader2, Activity, Award, TrendingUp, Users, DollarSign, Calendar, Clock, Video, CheckCircle, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import TrialClassModal from './TrialClassModal';
 import { format, isAfter } from 'date-fns';
 import { srLatn } from 'date-fns/locale';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 export default function DashboardIndex() {
   const { user } = useSelector((state: RootState) => state.auth);
+  const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
   
   const { data: analyticsData, isLoading: analyticsLoading } = useGetAnalyticsQuery(undefined, {
     skip: user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN',
@@ -179,6 +182,14 @@ export default function DashboardIndex() {
     
     // Sortiranje i filtriranje
     const allClasses = scheduleData || [];
+
+    // Da li učenik sme da zakaže probni čas?
+    const hasEverScheduledTrial = allClasses.some((cls: any) => 
+      cls.topic === '[PROBNI CAS]' && 
+      cls.students.some((st: any) => st.studentId?._id === user?.id || st.studentId === user?.id)
+    );
+    const canScheduleTrial = user?.activePackage === 'NONE' && !hasEverScheduledTrial;
+
     const upcomingClasses = allClasses
       .filter((c: any) => c.status === 'ZAKAZAN' && isAfter(new Date(c.startTime), now))
       .sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
@@ -192,6 +203,30 @@ export default function DashboardIndex() {
 
     return (
       <div className="max-w-5xl space-y-8">
+        {/* 0. PROBNI CAS BANNER */}
+        {canScheduleTrial && (
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-white/10 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider mb-3">
+                  <Star className="w-4 h-4 mr-1 text-yellow-300" fill="currentColor" /> Poklon Dobrodošlice
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-2">Zakaži svoj prvi čas besplatno!</h2>
+                <p className="text-blue-100 text-lg max-w-xl">
+                  Izaberi nivo programiranja, upoznaj se sa profesorom i saznaj da li ti se sviđa naša platforma. Bez ikakvih obaveza.
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsTrialModalOpen(true)}
+                className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-bold text-lg hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-xl flex-shrink-0"
+              >
+                Zakaži Besplatan Čas
+              </button>
+            </div>
+          </div>
+        )}
+
         <StudentStats />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -298,6 +333,12 @@ export default function DashboardIndex() {
           </div>
           
         </div>
+
+        <TrialClassModal 
+          isOpen={isTrialModalOpen} 
+          onClose={() => setIsTrialModalOpen(false)}
+          onSuccess={() => {}} 
+        />
       </div>
     );
   }
