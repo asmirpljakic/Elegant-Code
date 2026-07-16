@@ -5,6 +5,7 @@ import { ActivityLog } from '../models/ActivityLog';
 import { Notification } from '../models/Notification';
 import { createScheduleSchema } from '@elegant-code/shared';
 import mongoose from 'mongoose';
+import { sendTrialClassNotification } from '../utils/mailer';
 
 // @desc    Dohvati raspored (zavisno od uloge vraća različite podatke)
 // @route   GET /api/schedule
@@ -663,5 +664,124 @@ export const scheduleMakeupClass = async (req: Request, res: Response): Promise<
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Greška pri zakazivanju nadoknade.' });
+  }
+};
+
+// @desc    Dohvati zauzete termine za profesora
+// @route   GET /api/schedule/public/:profesorId
+// @access  Private (Svi)
+export const getProfessorBusySlots = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { profesorId } = req.params;
+    
+    // Vraćamo samo časove koji su zakazani u budućnosti
+    const classes = await ClassSession.find({
+      profesorId,
+      status: 'ZAKAZAN',
+      endTime: { $gt: new Date() }
+    }).select('startTime endTime');
+
+    res.json(classes);
+  } catch (error) {
+    res.status(500).json({ error: 'Greška pri učitavanju termina profesora' });
+  }
+};
+
+// @desc    Zakaži probni čas (za nove učenike)
+// @route   POST /api/schedule/trial
+// @access  Private/Ucenik
+export const scheduleTrialClass = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { courseName, profesorId, startDate, startTime, endTime } = req.body;
+    const studentId = req.user?._id;
+
+    if (!studentId || req.user?.role !== 'UCENIK') {
+      res.status(403).json({ error: 'Samo učenici mogu zakazati probni čas.' });
+      return;
+    }
+
+    if (!profesorId || !courseName || !startDate || !startTime || !endTime) {
+      res.status(400).json({ error: 'Sva polja su obavezna.' });
+      return;
+    }
+
+    // Proveri da li učenik već ima probni čas u bazi (bilo zakazan ili završen)
+    const existingTrial = await ClassSession.findOne({
+      'students.studentId': studentId,
+      topic: '[PROBNI CAS]'
+    });
+
+    if (existingTrial) {
+      res.status(400).json({ error: 'Već ste zakazali ili imali svoj probni čas.' });
+      return;
+    }
+
+    const profesor = await User.findById(profesorId);
+    if (!profesor || profesor.role !== 'PROFESOR') {
+      res.status(400).json({ error: 'Izabrani profesor nije validan.' });
+      return;
+    }
+
+    // Kreiramo prave ISO datume 
+    let sDate = new Date(startTime);
+    let eDate = new Date(endTime);
+    
+    if (startTime.includes(':') && startTime.length <= 5) {
+      sDate = new Date(`${startDate}T${startTime}:00+02:00`); 
+      eDate = new Date(`${startDate}T${endTime}:00+02:00`);
+    }
+
+    // Proveri preklapanje
+    const overlapQuery = {
+      status: { $ne: 'OTKAZAN' },
+      $or: [
+        {
+          $and: [
+            { startTime: { $lt: eDate } },
+            { endTime: { $gt: sDate } }
+          ]
+        }
+      ],
+      profesorId: profesorId
+    };
+
+    const isOverlap = await ClassSession.findOne(overlapQuery);
+    if (isOverlap) {
+      res.status(400).json({ error: 'Ovaj termin je upravo zauzet. Molimo izaberite drugi.' });
+      return;
+    }
+
+    // Zakaži čas
+    const newClass = await ClassSession.create({
+      courseName,
+      profesorId,
+      students: [{ studentId, attended: false }],
+      startTime: sDate,
+      endTime: eDate,
+      topic: '[PROBNI CAS]',
+      status: 'ZAKAZAN'
+    });
+
+    // Notifikacija profesoru (in-app)
+    await Notification.create({
+      userId: profesorId,
+      title: 'Novi Probni Čas! 🌟',
+      message: `Učenik ${req.user?.firstName} ${req.user?.lastName} je zakazao besplatan probni čas kod Vas. Nivo: ${courseName}.`,
+      type: 'INFO'
+    });
+
+    // Pošalji email profesoru (asinhrono)
+    const timeStr = `${sDate.getHours().toString().padStart(2, '0')}:${sDate.getMinutes().toString().padStart(2, '0')} (${sDate.getDate()}.${sDate.getMonth() + 1}.)`;
+    sendTrialClassNotification(
+      profesor.email, 
+      `${req.user?.firstName} ${req.user?.lastName}`, 
+      courseName, 
+      timeStr
+    );
+
+    res.status(201).json(newClass);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Greška pri zakazivanju probnog časa.' });
   }
 };

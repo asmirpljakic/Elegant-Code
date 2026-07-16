@@ -139,6 +139,17 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['ClassSession', 'User', 'Users'],
     }),
+    getProfessorBusySlots: builder.query<any[], string>({
+      query: (profesorId) => `/schedule/public/${profesorId}`,
+    }),
+    scheduleTrialClass: builder.mutation<void, any>({
+      query: (data) => ({
+        url: '/schedule/trial',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ClassSession', 'User', 'Users', 'Notifications'],
+    }),
     updateClass: builder.mutation<void, { id: string, data: any, all?: boolean }>({
       query: ({ id, data, all }) => ({
         url: `/schedule/${id}${all ? '?all=true' : ''}`,
@@ -242,7 +253,9 @@ export const {
   useDeleteUserMutation,
   useToggleUserStatusMutation,
   useGetScheduleQuery,
+  useGetProfessorBusySlotsQuery,
   useCreateClassMutation,
+  useScheduleTrialClassMutation,
   useCompleteClassMutation,
   useCancelClassMutation,
   useUpdateClassMutation,

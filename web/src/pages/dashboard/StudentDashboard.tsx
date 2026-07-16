@@ -6,6 +6,7 @@ import { Loader2, Award, Zap, Shield, Video, Calendar, Clock, Star, Trophy, Targ
 import { format, isAfter, isBefore } from 'date-fns';
 import { srLatn } from 'date-fns/locale';
 import { cn } from '../../lib/utils';
+import TrialClassModal from './TrialClassModal';
 
 export default function StudentDashboard() {
   const { user: authUser } = useSelector((state: RootState) => state.auth);
@@ -39,6 +40,15 @@ export default function StudentDashboard() {
     .sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   const nextClass = upcomingClasses[0];
+
+  const [isTrialModalOpen, setIsTrialModalOpen] = React.useState(false);
+
+  // Da li učenik sme da zakaže probni čas?
+  const hasEverScheduledTrial = scheduleData.some((cls: any) => 
+    cls.topic === '[PROBNI CAS]' && 
+    cls.students.some((st: any) => st.studentId?._id === user?._id || st.studentId === user?._id)
+  );
+  const canScheduleTrial = user?.role === 'UCENIK' && progress.totalClassesAttended === 0 && !hasEverScheduledTrial;
 
   // Logika za značke
   const badges = [
@@ -74,6 +84,30 @@ export default function StudentDashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       
+      {/* 0. PROBNI CAS BANNER */}
+      {canScheduleTrial && (
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-white/10 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider mb-3">
+                <Star className="w-4 h-4 mr-1 text-yellow-300" fill="currentColor" /> Poklon Dobrodošlice
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-2">Zakaži svoj prvi čas besplatno!</h2>
+              <p className="text-blue-100 text-lg max-w-xl">
+                Izaberi nivo programiranja, upoznaj se sa profesorom i saznaj da li ti se sviđa naša platforma. Bez ikakvih obaveza.
+              </p>
+            </div>
+            <button 
+              onClick={() => setIsTrialModalOpen(true)}
+              className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-bold text-lg hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-xl flex-shrink-0"
+            >
+              Zakaži Besplatan Čas
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1. SEKCIJA NAPRETKA (XP & Level) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-10 relative overflow-hidden">
         {/* Dekorativni pozadinski sjaj */}
@@ -242,6 +276,14 @@ export default function StudentDashboard() {
         </div>
 
       </div>
+
+      <TrialClassModal 
+        isOpen={isTrialModalOpen} 
+        onClose={() => setIsTrialModalOpen(false)}
+        onSuccess={() => {
+          // Ovaj se trigeruje kad se uspesno zakaze (moze obavestiti Redux da fetchuje, ali vec se invalidatesTags radi)
+        }} 
+      />
     </div>
   );
 }
