@@ -581,7 +581,27 @@ export const scheduleMakeupClass = async (req: Request, res: Response): Promise<
     const eDate = new Date(startDate);
     eDate.setHours(endHour, endMinute, 0, 0);
 
-    const isOverlap = await checkOverlap(sDate, eDate, profesorId, studentIds);
+    const overlapQuery = {
+      status: { $ne: 'OTKAZAN' },
+      $or: [
+        {
+          $and: [
+            { startTime: { $lt: eDate } },
+            { endTime: { $gt: sDate } }
+          ]
+        }
+      ],
+      $and: [
+        {
+          $or: [
+            { profesorId: profesorId },
+            { 'students.studentId': { $in: studentIds } }
+          ]
+        }
+      ]
+    };
+    const overlapClass = await ClassSession.findOne(overlapQuery);
+    const isOverlap = !!overlapClass;
     if (isOverlap) {
       res.status(400).json({ error: 'Izabrani termin se preklapa sa postojećim časom.' });
       return;
@@ -592,7 +612,7 @@ export const scheduleMakeupClass = async (req: Request, res: Response): Promise<
     for (const stId of studentIds) {
       const student = await User.findById(stId);
       if (student && student.progress && (student.progress.makeupClassesOwed || 0) > 0) {
-        student.progress.makeupClassesOwed -= 1;
+        student.progress.makeupClassesOwed = (student.progress.makeupClassesOwed || 1) - 1;
         student.markModified('progress');
         await student.save();
         validStudents.push({ studentId: student._id, attended: false });
