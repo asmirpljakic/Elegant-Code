@@ -295,7 +295,7 @@ export default function Schedule() {
 
   return (
     <div className="space-y-6">
-      <div className="relative z-50 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="relative z-30 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Raspored Časova</h2>
           <p className="text-slate-400 mt-1">Zakazani termini i upravljanje časovima</p>
