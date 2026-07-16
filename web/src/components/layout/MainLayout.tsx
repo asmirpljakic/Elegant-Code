@@ -1,5 +1,6 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import type { RootState } from '../../store/store';
 import { logout } from '../../store/authSlice';
 import { 
@@ -12,7 +13,9 @@ import {
   BarChart, 
   Award, 
   Video, 
-  CalendarClock 
+  CalendarClock,
+  Menu,
+  X
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { NotificationDropdown } from '../ui/NotificationDropdown';
@@ -20,7 +23,14 @@ import { NotificationDropdown } from '../ui/NotificationDropdown';
 export default function MainLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Zatvaranje menija pri promeni rute na mobilnom
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -70,12 +80,32 @@ export default function MainLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row">
+      
+      {/* Mobile Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-900 flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-slate-800">
-          <Code2 className="w-6 h-6 text-primary mr-2" />
-          <span className="text-lg font-bold text-white tracking-tight">Elegant Code</span>
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-800 bg-slate-900 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="h-16 flex flex-shrink-0 items-center px-6 border-b border-slate-800 justify-between md:justify-start">
+          <div className="flex items-center">
+            <Code2 className="w-6 h-6 text-primary mr-2" />
+            <span className="text-lg font-bold text-white tracking-tight">Elegant Code</span>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden p-2 text-slate-400 hover:text-white"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
         
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -120,10 +150,16 @@ export default function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-slate-950">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-slate-950 h-screen">
         
-        {/* Top Header - Novi Top Bar za notifikacije */}
-        <header className="h-16 flex-shrink-0 flex items-center justify-end px-8 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md z-[100]">
+        {/* Top Header */}
+        <header className="h-16 flex-shrink-0 flex items-center justify-between md:justify-end px-4 md:px-8 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md z-[30]">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
           <NotificationDropdown />
         </header>
 

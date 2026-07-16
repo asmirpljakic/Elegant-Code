@@ -40,7 +40,6 @@ export default function UsersList() {
     role: filterRole !== 'ALL' ? filterRole : undefined,
     activePackage: filterPackage !== 'ALL' ? filterPackage : undefined
   }, {
-    pollingInterval: 5000,
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true
   });

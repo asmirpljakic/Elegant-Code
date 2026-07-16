@@ -17,7 +17,6 @@ export default function DashboardIndex() {
   
   const { data: analyticsData, isLoading: analyticsLoading } = useGetAnalyticsQuery(undefined, {
     skip: user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN',
-    pollingInterval: 5000,
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true
   });
@@ -204,10 +203,10 @@ export default function DashboardIndex() {
     const nextClass = upcomingClasses[0];
 
     return (
-      <div className="max-w-5xl space-y-8">
+      <div className="max-w-5xl space-y-6 md:space-y-8">
         {/* 0. PROBNI CAS BANNER */}
         {canScheduleTrial && (
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl md:rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
             <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-white/10 rounded-full blur-[80px] pointer-events-none"></div>
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
@@ -221,7 +220,7 @@ export default function DashboardIndex() {
               </div>
               <button 
                 onClick={() => setIsTrialModalOpen(true)}
-                className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-bold text-lg hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-xl flex-shrink-0"
+                className="w-full md:w-auto px-6 md:px-8 py-3 md:py-4 bg-white text-blue-600 rounded-xl md:rounded-2xl font-bold text-lg hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-xl flex-shrink-0"
               >
                 Zakaži Besplatan Čas
               </button>
