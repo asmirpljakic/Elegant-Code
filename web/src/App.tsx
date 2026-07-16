@@ -11,6 +11,7 @@ import Analytics from './pages/dashboard/Analytics';
 import Settings from './pages/dashboard/Settings';
 import Certificates from './pages/dashboard/Certificates';
 import GoogleMeet from './pages/dashboard/GoogleMeet';
+import MakeupSchedule from './pages/dashboard/MakeupSchedule';
 
 function App() {
   return (
@@ -35,6 +36,14 @@ function App() {
           
           {/* Ostale stranice unutar Layout-a */}
           <Route path="schedule" element={<Schedule />} />
+          <Route 
+            path="makeup-schedule" 
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
+                <MakeupSchedule />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="users" 
             element={

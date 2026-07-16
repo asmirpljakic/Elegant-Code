@@ -2,7 +2,18 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { logout } from '../../store/authSlice';
-import { LayoutDashboard, Calendar, Users, LogOut, Code2, Settings, BarChart, Award, Video } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Calendar, 
+  Users, 
+  LogOut, 
+  Code2, 
+  Settings, 
+  BarChart, 
+  Award, 
+  Video, 
+  CalendarClock 
+} from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { NotificationDropdown } from '../ui/NotificationDropdown';
 
@@ -19,6 +30,12 @@ export default function MainLayout() {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Raspored', path: '/dashboard/schedule', icon: Calendar },
+    { 
+      name: 'Nadoknade', 
+      path: '/dashboard/makeup-schedule', 
+      icon: CalendarClock,
+      hidden: !['SUPER_ADMIN', 'ADMIN', 'PROFESOR'].includes(user?.role || '') 
+    },
     { 
       name: 'Korisnici', 
       path: '/dashboard/users', 

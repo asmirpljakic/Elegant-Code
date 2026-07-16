@@ -1,15 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGetScheduleQuery, useCreateClassMutation, useCompleteClassMutation, useCancelClassMutation, useGetUsersQuery, useUpdateClassMutation, useDeleteClassMutation, useDeleteCompletedClassesMutation } from '../../store/apiSlice';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { Button } from '../../components/ui/Button';
-import MakeupClassModal from './MakeupClassModal';
-import FreeSlotsCalendar from './FreeSlotsCalendar';
 import { Calendar, Clock, Video, Users, User as UserIcon, CheckCircle2, Plus, X, Loader2, ChevronLeft, ChevronRight, List, Edit, Trash2, Search, Filter } from 'lucide-react';
 import { format, addDays, subDays, isSameDay, startOfDay, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval } from 'date-fns';
 import { srLatn } from 'date-fns/locale';
 
 export default function Schedule() {
+  const navigate = useNavigate();
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -37,14 +37,8 @@ export default function Schedule() {
   const [deleteCompletedClasses, { isLoading: isDeletingCompleted }] = useDeleteCompletedClassesMutation();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isMakeupModalOpen, setIsMakeupModalOpen] = useState(false);
   const [isClassDetailsModalOpen, setIsClassDetailsModalOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<any>(null);
-
-  // Stanja za nadoknade iz kalendara
-  const [initialMakeupDate, setInitialMakeupDate] = useState('');
-  const [initialMakeupStartTime, setInitialMakeupStartTime] = useState('');
-  const [initialMakeupEndTime, setInitialMakeupEndTime] = useState('');
   
   // Filter state for SuperAdmin/Admin
   const [filterUserId, setFilterUserId] = useState<string>('');
@@ -450,9 +444,8 @@ export default function Schedule() {
           {/* Dugme za nadoknadu */}
           {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'PROFESOR') && (
             <Button 
-              onClick={() => setIsMakeupModalOpen(true)}
-              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white border-none ml-2"
-              title="Zakaži nadoknadu učeniku"
+              onClick={() => navigate('/dashboard/makeup-schedule')}
+              className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transform hover:scale-105 active:scale-95"
             >
               <Calendar className="w-5 h-5 md:mr-2" />
               <span className="hidden md:inline">Zakaži Nadoknadu</span>
@@ -1177,33 +1170,6 @@ export default function Schedule() {
           </div>
         </div>
       )}
-
-      {/* KALENDAR SLOBODNIH TERMINA (Samo za Prof/Admin) */}
-      {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'PROFESOR') && (
-        <FreeSlotsCalendar 
-          scheduleList={schedule || []} 
-          profesorId={filterUserId === 'ALL' ? (user?.role === 'PROFESOR' ? user.id : '') : filterUserId}
-          onSlotClick={(date, start, end) => {
-            setInitialMakeupDate(date);
-            setInitialMakeupStartTime(start);
-            setInitialMakeupEndTime(end);
-            setIsMakeupModalOpen(true);
-          }}
-        />
-      )}
-
-      <MakeupClassModal 
-        isOpen={isMakeupModalOpen} 
-        onClose={() => {
-          setIsMakeupModalOpen(false);
-          setInitialMakeupDate('');
-          setInitialMakeupStartTime('');
-          setInitialMakeupEndTime('');
-        }} 
-        initialDate={initialMakeupDate}
-        initialStartTime={initialMakeupStartTime}
-        initialEndTime={initialMakeupEndTime}
-      />
 
     </div>
   );
