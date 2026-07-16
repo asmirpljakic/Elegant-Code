@@ -4,7 +4,7 @@ import type { LoginFormData, RegisterFormData, UserResponse, UpdateUserFormData,
 import { logout } from './authSlice';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:5001/api',
+  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
   prepareHeaders: (headers) => {
     // Ovde bismo dohvataili token iz localStorage-a i lepili ga na svaki request
     const token = localStorage.getItem('token');
