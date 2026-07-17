@@ -24,8 +24,10 @@ export default function Schedule() {
     refetchOnFocus: true, 
     refetchOnReconnect: true 
   });
-  const { data: allUsers } = useGetUsersQuery({ limit: 1000 }, {
-    skip: user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN' && user?.role !== 'PROFESOR'
+  const { data: allUsers, refetch: refetchUsers } = useGetUsersQuery({ limit: 1000, role: 'ALL', activePackage: 'ALL' }, {
+    skip: user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN' && user?.role !== 'PROFESOR',
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true
   });
   
   const [createClass, { isLoading: isCreating }] = useCreateClassMutation();
@@ -1007,12 +1009,7 @@ export default function Schedule() {
                 <div className="max-h-40 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl p-2 space-y-1">
                   {allUsers?.users?.filter(u => {
                     const isUcenik = u.role === 'UCENIK' || u.role === 'KLIJENT';
-                    // Proverava da li učenik ima bilo kakav ZAKAZAN čas u rasporedu
-                    const isBusy = schedule?.some((cls: any) => 
-                      cls.status === 'ZAKAZAN' && 
-                      cls.students.some((s: any) => s.studentId?._id === u._id)
-                    );
-                    return isUcenik && !isBusy;
+                    return isUcenik;
                   }).map(u => (
                     <label key={u._id} className="flex items-center px-3 py-2 hover:bg-slate-700 rounded-lg cursor-pointer transition-colors">
                       <input 

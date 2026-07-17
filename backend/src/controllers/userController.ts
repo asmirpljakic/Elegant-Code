@@ -97,6 +97,10 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
         totalUsers
       }
     });
+    
+    if (req.user?.role === 'PROFESOR') {
+      console.log(`[getUsers] Profesor ${req.user.email} trazi korisnike limit=${limit}. Pronadjeno: ${users.length}`);
+    }
   } catch (error) {
     res.status(500).json({ error: 'Greška pri povlačenju korisnika' });
   }
