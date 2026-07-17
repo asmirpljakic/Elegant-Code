@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useGetSettingsQuery, useUpdateSettingsMutation } from '../../store/apiSlice';
+import { useGetSettingsQuery, useUpdateSettingsMutation, useBroadcastNotificationMutation } from '../../store/apiSlice';
 import type { RootState } from '../../store/store';
 import { Button } from '../../components/ui/Button';
-import { Loader2, Settings as SettingsIcon, DollarSign, Package, Save } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, DollarSign, Package, Save, BellRing, Send } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -13,12 +13,17 @@ export default function Settings() {
   });
   
   const [updateSettings, { isLoading: isUpdating }] = useUpdateSettingsMutation();
+  const [broadcastNotification, { isLoading: isBroadcasting }] = useBroadcastNotificationMutation();
 
   // Lokalno stanje forme
   const [fee, setFee] = useState(15);
   const [pkgOsnovni, setPkgOsnovni] = useState(100);
   const [pkgSrednji, setPkgSrednji] = useState(150);
   const [pkgNapredni, setPkgNapredni] = useState(200);
+
+  // Stanje za globalno obaveštenje
+  const [broadcastTitle, setBroadcastTitle] = useState('Važno obaveštenje');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
 
   // Inicijalizacija forme kad stignu podaci
   useEffect(() => {
@@ -143,7 +148,67 @@ export default function Settings() {
           </div>
         </div>
 
-
+        {/* Globalna Obaveštenja */}
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 relative overflow-hidden mt-6">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <BellRing className="w-40 h-40" />
+          </div>
+          
+          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2 relative z-10">
+            <BellRing className="w-5 h-5 text-amber-400" /> Globalna Obaveštenja (Broadcast)
+          </h3>
+          <p className="text-sm text-slate-400 mb-6 relative z-10">
+            Pošalji in-app obaveštenje (zvonce) svim korisnicima platforme istovremeno.
+          </p>
+          
+          <div className="space-y-4 relative z-10">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Naslov Obaveštenja</label>
+              <input 
+                type="text"
+                value={broadcastTitle}
+                onChange={(e) => setBroadcastTitle(e.target.value)}
+                placeholder="Npr. Kolektivni odmor"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Sadržaj Poruke</label>
+              <textarea 
+                value={broadcastMessage}
+                onChange={(e) => setBroadcastMessage(e.target.value)}
+                placeholder="Npr. Naša platforma neće raditi do 15.08.2026 godine..."
+                rows={4}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary outline-none resize-none"
+              />
+            </div>
+            <div className="flex justify-end pt-2">
+              <Button 
+                type="button" 
+                onClick={async () => {
+                  if (!broadcastTitle || !broadcastMessage) {
+                    alert('Naslov i poruka su obavezni!');
+                    return;
+                  }
+                  if (confirm('Da li ste sigurni da želite da pošaljete ovo obaveštenje SVIM korisnicima?')) {
+                    try {
+                      await broadcastNotification({ title: broadcastTitle, message: broadcastMessage }).unwrap();
+                      alert('Obaveštenje uspešno poslato svima!');
+                      setBroadcastMessage('');
+                    } catch (err) {
+                      alert('Došlo je do greške prilikom slanja obaveštenja.');
+                    }
+                  }
+                }}
+                isLoading={isBroadcasting} 
+                className="px-6 py-2.5 flex items-center bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Pošalji Svima
+              </Button>
+            </div>
+          </div>
+        </div>
 
         <div className="flex justify-end">
           <Button type="submit" isLoading={isUpdating} className="px-8 py-4 flex items-center text-lg">

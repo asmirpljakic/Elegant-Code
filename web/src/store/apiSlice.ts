@@ -224,6 +224,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Notifications'],
     }),
+    broadcastNotification: builder.mutation<void, { title: string; message: string }>({
+      query: (data) => ({
+        url: '/notifications/broadcast',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
     getSettings: builder.query<any, void>({
       query: () => '/settings',
       providesTags: ['Settings'],
