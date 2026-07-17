@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, updateUser, createUser, getUserProfile, deleteUser, toggleUserStatus, getPublicProfessors } from '../controllers/userController';
+import { getUsers, updateUser, createUser, getUserProfile, deleteUser, toggleUserStatus, getPublicProfessors, verifyUserManually } from '../controllers/userController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -23,5 +23,9 @@ router.route('/:id')
 // Aktivacija i deaktivacija korisnika
 router.route('/:id/status')
   .patch(protect, authorize('SUPER_ADMIN', 'ADMIN'), toggleUserStatus);
+
+// Manuelna verifikacija korisnika
+router.route('/:id/verify')
+  .patch(protect, authorize('SUPER_ADMIN', 'ADMIN'), verifyUserManually);
 
 export default router;

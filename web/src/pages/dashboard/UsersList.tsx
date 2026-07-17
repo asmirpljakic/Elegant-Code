@@ -6,10 +6,11 @@ import {
   useCreateUserMutation,
   useDeleteUserMutation,
   useToggleUserStatusMutation,
-  useApproveCertificateMutation
+  useApproveCertificateMutation,
+  useVerifyUserManuallyMutation
 } from '../../store/apiSlice';
 import { Button } from '../../components/ui/Button';
-import { Search, Plus, Filter, MoreVertical, Edit2, Shield, Trash2, Power, UserPlus, FileSignature, Minus, Loader2, ChevronLeft, ChevronRight, X, User as UserIcon, Info, Award } from 'lucide-react';
+import { Search, Plus, Filter, MoreVertical, Edit2, Shield, Trash2, Power, UserPlus, FileSignature, Minus, Loader2, ChevronLeft, ChevronRight, X, User as UserIcon, Info, Award, CheckCircle } from 'lucide-react';
 import type { UserResponse } from '@elegant-code/shared';
 import { useDebounce } from '../../hooks/useDebounce';
 import { UserDetailsModal } from '../../components/users/UserDetailsModal';
@@ -48,6 +49,7 @@ export default function UsersList() {
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [toggleUserStatus] = useToggleUserStatusMutation();
+  const [verifyUserManually] = useVerifyUserManuallyMutation();
   const [approveCertificate, { isLoading: isApprovingCert }] = useApproveCertificateMutation();
 
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
@@ -186,6 +188,16 @@ export default function UsersList() {
         await deleteUser(user._id).unwrap();
       } catch (err: any) {
         alert(err?.data?.error || 'Greška pri brisanju korisnika.');
+      }
+    }
+  };
+
+  const handleVerifyManually = async (user: UserResponse) => {
+    if (window.confirm(`Da li ste sigurni da želite da verifikujete nalog korisnika ${user.firstName} ${user.lastName}?`)) {
+      try {
+        await verifyUserManually(user._id).unwrap();
+      } catch (err: any) {
+        alert(err?.data?.error || 'Greška pri verifikaciji korisnika.');
       }
     }
   };
@@ -414,6 +426,17 @@ export default function UsersList() {
                             title={user.isActive === false ? "Aktiviraj nalog" : "Deaktiviraj nalog"}
                           >
                             <Power className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Verifikuj Dugme (Samo Admin/SuperAdmin za goste) */}
+                        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && user.role === 'GOST' && (
+                          <button 
+                            onClick={() => handleVerifyManually(user)}
+                            className="p-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 rounded-lg transition-colors inline-flex items-center"
+                            title="Verifikuj nalog"
+                          >
+                            <CheckCircle className="w-4 h-4" />
                           </button>
                         )}
                         

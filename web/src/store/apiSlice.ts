@@ -111,6 +111,13 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Users', 'User'],
     }),
+    verifyUserManually: builder.mutation<{ message: string }, string>({
+      query: (id) => ({
+        url: `/users/${id}/verify`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Users', 'User'],
+    }),
     createUser: builder.mutation<UserResponse, any>({
       query: (data) => ({
         url: `/users`,
@@ -256,6 +263,7 @@ export const {
   useCreateUserMutation,
   useDeleteUserMutation,
   useToggleUserStatusMutation,
+  useVerifyUserManuallyMutation,
   useGetScheduleQuery,
   useGetProfessorBusySlotsQuery,
   useCreateClassMutation,

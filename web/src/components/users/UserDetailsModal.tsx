@@ -73,11 +73,17 @@ export function UserDetailsModal({ user, onClose }: UserDetailsModalProps) {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
                   <Mail className="w-5 h-5 text-blue-400" />
-                  <span>{user.email}</span>
+                  <div>
+                    <p className="text-xs text-slate-500">Email Adresa</p>
+                    <p>{user.email}</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
                   <Phone className="w-5 h-5 text-emerald-400" />
-                  <span>{user.phoneNumber || 'Nije unet broj telefona'}</span>
+                  <div>
+                    <p className="text-xs text-slate-500">Broj Telefona</p>
+                    <p>{user.phoneNumber || 'Nije unet broj telefona'}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -156,7 +162,7 @@ export function UserDetailsModal({ user, onClose }: UserDetailsModalProps) {
                 <Button 
                   type="submit" 
                   disabled={newPassword.length < 6 || isLoading}
-                  className="mb-0"
+                  className="mb-0 h-12"
                 >
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                   {isSuccess ? <CheckCircle className="w-4 h-4 mr-2" /> : null}

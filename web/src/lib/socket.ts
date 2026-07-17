@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 // U razvoju koristimo lokalni server, u produkciji relativni URL
 const SOCKET_URL = import.meta.env.VITE_API_URL 
   ? import.meta.env.VITE_API_URL.replace('/api', '') 
-  : (import.meta.env.DEV ? 'http://localhost:5000' : '/');
+  : (import.meta.env.DEV ? 'http://localhost:5001' : '/');
 
 let socket: Socket | null = null;
 

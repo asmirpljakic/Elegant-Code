@@ -17,7 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const currentType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
     return (
-      <div className="flex flex-col space-y-1.5 w-full">
+      <div className="flex flex-col space-y-2.5 w-full">
         {label && (
           <label className="text-sm font-medium text-slate-300">
             {label}

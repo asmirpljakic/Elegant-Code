@@ -242,7 +242,11 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
     await user.save();
 
     const { sendOTP } = await import('../utils/mailer');
-    await sendOTP(email, newOtpCode);
+    try {
+      await sendOTP(email, newOtpCode);
+    } catch (mailErr) {
+      console.error('Neuspešno slanje OTP emaila prilikom ponovnog slanja:', mailErr);
+    }
 
     res.json({ message: 'Novi kod je uspešno poslat na vaš email.' });
   } catch (error) {

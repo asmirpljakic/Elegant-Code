@@ -153,7 +153,7 @@ export default function MainLayout() {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-slate-950 h-screen">
         
         {/* Top Header */}
-        <header className="h-16 flex-shrink-0 flex items-center justify-between md:justify-end px-4 md:px-8 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md z-[30]">
+        <header className="h-16 flex-shrink-0 flex items-center justify-between md:justify-end px-4 md:px-8 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md relative z-[100]">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
             className="md:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"

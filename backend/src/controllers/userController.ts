@@ -456,3 +456,51 @@ export const getPublicProfessors = async (req: Request, res: Response): Promise<
     res.status(500).json({ error: 'Greška pri učitavanju profesora.' });
   }
 };
+
+// @desc    Manuelno verifikuj korisnika (Super Admin i Admin)
+// @route   PATCH /api/users/:id/verify
+// @access  Private/Admin
+export const verifyUserManually = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const currentUser = req.user;
+
+    if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN') {
+      res.status(403).json({ error: 'Samo administratori mogu verifikovati naloge.' });
+      return;
+    }
+
+    const userToVerify = await User.findById(id);
+    if (!userToVerify) {
+      res.status(404).json({ error: 'Korisnik nije pronađen' });
+      return;
+    }
+
+    if (userToVerify.isVerified) {
+      res.status(400).json({ error: 'Korisnik je već verifikovan.' });
+      return;
+    }
+
+    userToVerify.isVerified = true;
+    userToVerify.role = 'UCENIK';
+    userToVerify.otpCode = undefined;
+    userToVerify.otpExpiresAt = undefined;
+    
+    await userToVerify.save();
+
+    await ActivityLog.create({
+      action: 'EMAIL_VERIFIKACIJA',
+      description: `Administrator ${currentUser?.firstName} ${currentUser?.lastName} je manuelno verifikovao nalog: ${userToVerify.firstName} ${userToVerify.lastName}.`
+    });
+
+    try {
+      getIO().emit('users_updated');
+    } catch (e) {
+      console.error('Socket.IO emit error:', e);
+    }
+
+    res.json({ message: 'Korisnik je uspešno verifikovan.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Greška pri manuelnoj verifikaciji korisnika.' });
+  }
+};
