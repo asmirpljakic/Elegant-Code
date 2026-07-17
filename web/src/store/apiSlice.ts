@@ -287,6 +287,7 @@ export const {
   useMarkAllNotificationsAsReadMutation,
   useGetSettingsQuery,
   useUpdateSettingsMutation,
+  useBroadcastNotificationMutation,
   useGetMeQuery,
   useGetMyCertificatesQuery,
   useGetStudentCertificatesQuery,
