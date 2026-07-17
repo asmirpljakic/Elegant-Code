@@ -750,14 +750,14 @@ export default function Schedule() {
                     <div className="p-3 flex flex-col h-full items-center justify-center text-center">
                       <div className="mb-2 w-full">
                         <span className="text-sm font-bold text-slate-200 bg-slate-900/60 px-2 py-1 rounded-md border border-slate-700/50 shadow-sm inline-flex items-center justify-center w-fit">
-                          <span className="mr-1">🕒</span> {format(startDate, 'HH:mm')} - {format(endDate, 'HH:mm')}
+                          <span className="mr-1">🕒</span> {format(startDate, 'HH:mm')}
                         </span>
                       </div>
                       
                       <div className="flex flex-col gap-1 w-full items-center">
                         {cls.students && cls.students.length > 0 ? (
                           cls.students.map((s: any) => (
-                            <p key={s.studentId?._id} className="text-sm font-semibold text-white truncate w-full px-1">
+                            <p key={s.studentId?._id} className="text-base font-bold text-white truncate w-full px-1">
                               {s.studentId?.firstName} {s.studentId?.lastName}
                             </p>
                           ))
