@@ -749,7 +749,7 @@ export default function Schedule() {
                   >
                     <div className="p-3 flex flex-col h-full items-center justify-center text-center">
                       <div className="mb-2 w-full">
-                        <span className="text-base font-bold text-slate-200 bg-slate-900/60 px-2 rounded border border-slate-700/50 shadow-sm inline-flex items-center justify-center w-fit leading-none pt-1.5 pb-0">
+                        <span className="text-base font-bold text-slate-200 bg-slate-900/60 px-2 rounded border border-slate-700/50 shadow-sm inline-flex items-center justify-center w-fit leading-none py-1.5">
                           <span className="mr-1.5">🕒</span> {format(startDate, 'HH:mm')}
                         </span>
                       </div>
