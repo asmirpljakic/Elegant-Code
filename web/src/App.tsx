@@ -12,8 +12,26 @@ import Settings from './pages/dashboard/Settings';
 import Certificates from './pages/dashboard/Certificates';
 import GoogleMeet from './pages/dashboard/GoogleMeet';
 import MakeupSchedule from './pages/dashboard/MakeupSchedule';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { getSocket } from './lib/socket';
+import { apiSlice } from './store/apiSlice';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    socket.on('users_updated', () => {
+      console.log('Primljen users_updated signal, osvežavam podatke...');
+      dispatch(apiSlice.util.invalidateTags(['Users', 'ClassSession']));
+    });
+
+    return () => {
+      socket.off('users_updated');
+    };
+  }, [dispatch]);
   return (
     <BrowserRouter>
       <Routes>

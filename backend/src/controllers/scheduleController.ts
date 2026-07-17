@@ -6,6 +6,7 @@ import { Notification } from '../models/Notification';
 import { createScheduleSchema } from '@elegant-code/shared';
 import mongoose from 'mongoose';
 import { sendTrialClassNotification } from '../utils/mailer';
+import { getIO } from '../socket';
 
 // @desc    Dohvati raspored (zavisno od uloge vraća različite podatke)
 // @route   GET /api/schedule
@@ -201,6 +202,13 @@ export const createClass = async (req: Request, res: Response): Promise<void> =>
       });
     }
 
+    // Emitovanje dogadjaja za klijente
+    try {
+      getIO().emit('users_updated');
+    } catch (e) {
+      console.error('Socket.IO emit error:', e);
+    }
+
     res.status(201).json({ message: `Uspešno kreirano ${classesToCreate.length} ponavljajućih časova.`, classesToCreate });
     
     // Asinhrono kreiranje notifikacija za sve izabrane učenike
@@ -297,6 +305,9 @@ export const completeClass = async (req: Request, res: Response): Promise<void> 
       }
     }
 
+    // Emitovanje dogadjaja za klijente
+    try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
+
     res.json({ message: 'Čas je uspešno završen', classSession });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri završetku časa' });
@@ -387,6 +398,9 @@ export const cancelClass = async (req: Request, res: Response): Promise<void> =>
       }
     }
 
+    // Emitovanje dogadjaja za klijente
+    try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
+
     res.json({ message: 'Čas je uspešno otkazan, nadoknada je dodata učenicima.', classSession });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri otkazivanju časa' });
@@ -428,6 +442,9 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
         status: 'ZAKAZAN',
         startTime: { $gte: classSession.startTime }
       });
+      // Emitovanje dogadjaja za klijente
+      try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
+
       res.json({ message: 'Ceo predstojeći ciklus je obrisan' });
       
       // Notifikacija
@@ -450,6 +467,9 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
     } else {
       await rollbackStudentProgress(classSession);
       await ClassSession.findByIdAndDelete(id);
+      // Emitovanje dogadjaja za klijente
+      try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
+
       res.json({ message: 'Čas je uspešno obrisan' });
 
       // Notifikacija
@@ -498,6 +518,9 @@ export const deleteCompletedClasses = async (req: Request, res: Response): Promi
     }
 
     const result = await ClassSession.deleteMany(query);
+    // Emitovanje dogadjaja za klijente
+    try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
+
     res.json({ message: `Uspešno obrisano ${result.deletedCount} završenih časova` });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri brisanju završenih časova' });
@@ -537,6 +560,9 @@ export const updateClass = async (req: Request, res: Response): Promise<void> =>
         },
         { $set: { topic, meetingLink } } // Vreme obično nije dobro menjati masovno bez kalkulacije
       );
+      // Emitovanje dogadjaja za klijente
+      try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
+
       res.json({ message: 'Detalji celog predstojećeg ciklusa su ažurirani' });
     } else {
       // Ažuriranje samo ovog časa
@@ -545,6 +571,9 @@ export const updateClass = async (req: Request, res: Response): Promise<void> =>
         { topic, meetingLink, startTime, endTime },
         { new: true }
       );
+      // Emitovanje dogadjaja za klijente
+      try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
+
       res.json(updatedClass);
     }
 

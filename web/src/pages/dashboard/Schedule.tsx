@@ -20,7 +20,6 @@ export default function Schedule() {
 
   const { user } = useSelector((state: RootState) => state.auth);
   const { data: schedule, isLoading } = useGetScheduleQuery(undefined, {
-    pollingInterval: 5000, // Smanjeno na 5 sekundi za pravi "Live" doživljaj
     skipPollingIfUnfocused: false, 
     refetchOnFocus: true, 
     refetchOnReconnect: true 

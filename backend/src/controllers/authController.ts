@@ -4,6 +4,7 @@ import { User } from '../models/User';
 import { ActivityLog } from '../models/ActivityLog';
 import jsonwebtoken from 'jsonwebtoken';
 import { loginSchema, registerSchema } from '@elegant-code/shared';
+import { getIO } from '../socket';
 
 const generateToken = (user: any) => {
   return jsonwebtoken.sign({ 
@@ -75,6 +76,13 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         console.error('Neuspešno slanje OTP emaila prilikom registracije:', mailErr);
       });
     });
+
+    // Emitovanje dogadjaja za klijente
+    try {
+      getIO().emit('users_updated');
+    } catch (e) {
+      console.error('Socket.IO emit error:', e);
+    }
 
     if (user) {
       res.status(201).json({

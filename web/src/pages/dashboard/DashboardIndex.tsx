@@ -23,7 +23,6 @@ export default function DashboardIndex() {
 
   const { data: scheduleData, isLoading: scheduleLoading } = useGetScheduleQuery(undefined, {
     skip: user?.role !== 'UCENIK' && user?.role !== 'KLIJENT' && user?.role !== 'PROFESOR',
-    pollingInterval: 5000,
     refetchOnFocus: true,
     refetchOnMountOrArgChange: true
   });

@@ -15,6 +15,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import certificateRoutes from './routes/certificateRoutes';
 import { connectDB } from './config/db';
 import { startCronJobs } from './jobs/cronJobs';
+import { initSocket } from './socket';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -52,9 +53,12 @@ startCronJobs();
 // Start Server
 const startServer = async () => {
   await connectDB();
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server radi na portu ${PORT}`);
   });
+  
+  // Inicijalizacija Socket.IO nad pokrenutim HTTP serverom
+  initSocket(server);
 };
 
 startServer();

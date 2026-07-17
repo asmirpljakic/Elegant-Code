@@ -5,6 +5,7 @@ import { ClassSession } from '../models/ClassSession';
 import { ActivityLog } from '../models/ActivityLog';
 import { updateUserSchema, createUserSchema } from '@elegant-code/shared';
 import { sendEmail } from '../utils/email';
+import { getIO } from '../socket';
 
 // @desc    Dohvati profil trenutnog korisnika (sa uvek svežim XP-om)
 // @route   GET /api/users/me
@@ -173,6 +174,13 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       });
     }
 
+    // Emitovanje dogadjaja za klijente
+    try {
+      getIO().emit('users_updated');
+    } catch (e) {
+      console.error('Socket.IO emit error:', e);
+    }
+
     res.status(201).json({
       _id: user.id,
       firstName: user.firstName,
@@ -292,6 +300,13 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 
     const updatedUser = await userToEdit.save();
 
+    // Emitovanje dogadjaja za klijente
+    try {
+      getIO().emit('users_updated');
+    } catch (e) {
+      console.error('Socket.IO emit error:', e);
+    }
+
     res.json({
       _id: updatedUser._id,
       firstName: updatedUser.firstName,
@@ -362,6 +377,13 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       description: `${currentUser?.role} ${currentUser?.firstName} je obrisao nalog: ${userToDelete.firstName} ${userToDelete.lastName}.`
     });
 
+    // Emitovanje dogadjaja za klijente
+    try {
+      getIO().emit('users_updated');
+    } catch (e) {
+      console.error('Socket.IO emit error:', e);
+    }
+
     res.json({ message: 'Korisnik je uspešno obrisan.' });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri brisanju korisnika.' });
@@ -403,6 +425,13 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
         subject: 'Obaveštenje: Vaš nalog je deaktiviran',
         message: `Poštovani/a ${userToToggle.firstName},\n\nVaš nalog na platformi Elegant Code je deaktiviran od strane administracije.\n\nUkoliko smatrate da je došlo do greške, molimo kontaktirajte nas.\n\nSrdačan pozdrav,\nTim Elegant Code`
       });
+    }
+
+    // Emitovanje dogadjaja za klijente
+    try {
+      getIO().emit('users_updated');
+    } catch (e) {
+      console.error('Socket.IO emit error:', e);
     }
 
     res.json({ 
