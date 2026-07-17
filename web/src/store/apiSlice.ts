@@ -224,7 +224,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Notifications'],
     }),
-    broadcastNotification: builder.mutation<void, { title: string; message: string }>({
+    broadcastNotification: builder.mutation<void, { title: string; message: string; target: 'SVI' | 'PROFESORI' | 'UCENICI' }>({
       query: (data) => ({
         url: '/notifications/broadcast',
         method: 'POST',

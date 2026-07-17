@@ -24,6 +24,7 @@ export default function Settings() {
   // Stanje za globalno obaveštenje
   const [broadcastTitle, setBroadcastTitle] = useState('Važno obaveštenje');
   const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastTarget, setBroadcastTarget] = useState<'SVI' | 'PROFESORI' | 'UCENICI'>('SVI');
 
   // Inicijalizacija forme kad stignu podaci
   useEffect(() => {
@@ -162,15 +163,29 @@ export default function Settings() {
           </p>
           
           <div className="space-y-4 relative z-10">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Naslov Obaveštenja</label>
-              <input 
-                type="text"
-                value={broadcastTitle}
-                onChange={(e) => setBroadcastTitle(e.target.value)}
-                placeholder="Npr. Kolektivni odmor"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary outline-none"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Naslov Obaveštenja</label>
+                <input 
+                  type="text"
+                  value={broadcastTitle}
+                  onChange={(e) => setBroadcastTitle(e.target.value)}
+                  placeholder="Npr. Kolektivni odmor"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Kome se šalje?</label>
+                <select
+                  value={broadcastTarget}
+                  onChange={(e) => setBroadcastTarget(e.target.value as any)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary outline-none appearance-none"
+                >
+                  <option value="SVI">Svima (Svi korisnici)</option>
+                  <option value="PROFESORI">Samo Profesorima</option>
+                  <option value="UCENICI">Samo Učenicima/Klijentima</option>
+                </select>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Sadržaj Poruke</label>
@@ -190,10 +205,13 @@ export default function Settings() {
                     alert('Naslov i poruka su obavezni!');
                     return;
                   }
-                  if (confirm('Da li ste sigurni da želite da pošaljete ovo obaveštenje SVIM korisnicima?')) {
+                  
+                  const targetLabel = broadcastTarget === 'SVI' ? 'SVIM korisnicima' : broadcastTarget === 'PROFESORI' ? 'SAMO profesorima' : 'SAMO učenicima';
+
+                  if (confirm(`Da li ste sigurni da želite da pošaljete ovo obaveštenje ${targetLabel}?`)) {
                     try {
-                      await broadcastNotification({ title: broadcastTitle, message: broadcastMessage }).unwrap();
-                      alert('Obaveštenje uspešno poslato svima!');
+                      const res = await broadcastNotification({ title: broadcastTitle, message: broadcastMessage, target: broadcastTarget }).unwrap();
+                      alert(res.message || 'Obaveštenje uspešno poslato!');
                       setBroadcastMessage('');
                     } catch (err) {
                       alert('Došlo je do greške prilikom slanja obaveštenja.');

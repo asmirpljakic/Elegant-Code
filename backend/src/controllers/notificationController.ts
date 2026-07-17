@@ -72,16 +72,24 @@ export const broadcastNotification = async (req: Request, res: Response): Promis
       return;
     }
 
-    const { title, message } = req.body;
+    const { title, message, target = 'SVI' } = req.body;
     if (!title || !message) {
       res.status(400).json({ error: 'Naslov i poruka su obavezni.' });
       return;
     }
 
-    // Pronađi sve aktivne korisnike
-    const users = await User.find({ isActive: true }).select('_id');
+    // Odredi koga tražimo
+    const query: any = { isActive: true };
+    if (target === 'PROFESORI') {
+      query.role = 'PROFESOR';
+    } else if (target === 'UCENICI') {
+      query.role = { $in: ['UCENIK', 'KLIJENT'] };
+    }
+
+    // Pronađi korisnike prema ciljnoj grupi
+    const users = await User.find(query).select('_id');
     
-    // Kreiraj notifikacije za sve korisnike odjednom
+    // Kreiraj notifikacije
     const notifications = users.map(u => ({
       userId: u._id,
       title,
@@ -92,7 +100,7 @@ export const broadcastNotification = async (req: Request, res: Response): Promis
     if (notifications.length > 0) {
       await Notification.insertMany(notifications);
       
-      // Obavesti sve klijente preko Socket.IO u realnom vremenu
+      // Obavesti klijente preko Socket.IO (emitujemo svima, a klijenti osvežavaju svoje stanje)
       try {
         getIO().emit('new_notification');
       } catch (err) {
@@ -100,7 +108,11 @@ export const broadcastNotification = async (req: Request, res: Response): Promis
       }
     }
 
-    res.json({ message: `Obaveštenje uspešno poslato svima (${notifications.length} korisnika).` });
+    let targetLabel = 'svim korisnicima';
+    if (target === 'PROFESORI') targetLabel = 'svim profesorima';
+    if (target === 'UCENICI') targetLabel = 'svim učenicima i klijentima';
+
+    res.json({ message: `Obaveštenje uspešno poslato ${targetLabel} (ukupno: ${notifications.length}).` });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri slanju globalnog obaveštenja.' });
   }
