@@ -2,7 +2,7 @@ import { Notification, INotification } from '../models/Notification';
 import { User } from '../models/User';
 import { sendWebPushNotification } from '../utils/webPush';
 
-export const createAndSendNotification = async (payload: Partial<INotification> | Partial<INotification>[]) => {
+export const createAndSendNotification = async (payload: any | any[]) => {
   try {
     const docs = Array.isArray(payload) ? payload : [payload];
     if (docs.length === 0) return;
