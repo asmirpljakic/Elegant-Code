@@ -12,13 +12,13 @@ export function ScrollingBanner() {
   if (activeBanners.length === 0) return null;
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-800 via-teal-700 to-emerald-800 text-white shadow-md overflow-hidden relative rounded-xl mb-6 border border-teal-500/30 flex items-stretch">
-      <div className="absolute inset-0 bg-white/5" />
+    <div className="w-full bg-slate-900/40 backdrop-blur-md text-slate-200 shadow-sm overflow-hidden relative rounded-xl mb-6 border border-emerald-500/20 flex items-stretch">
+      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
       
       {/* Fiksni deo sa ikonicom - tanji padding */}
-      <div className="px-4 py-2.5 bg-slate-900/90 backdrop-blur-sm z-10 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.4)] relative border-r border-teal-500/30">
+      <div className="px-4 py-2.5 bg-emerald-500/10 z-10 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs whitespace-nowrap relative border-r border-emerald-500/20">
         <Megaphone className="w-4 h-4 animate-pulse text-emerald-400" />
-        <span className="bg-gradient-to-r from-blue-100 to-emerald-100 bg-clip-text text-transparent">Najnovije</span>
+        <span className="text-emerald-400">Najnovije</span>
       </div>
       
       {/* Animacija Marquee - kreće odmah i vrti se beskonačno */}
@@ -29,7 +29,7 @@ export function ScrollingBanner() {
           {activeBanners.map((banner: any, index: number) => (
             <React.Fragment key={index}>
               {banner.link ? (
-                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
+                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-emerald-400 hover:underline underline-offset-4 transition-colors">
                   {banner.text}
                 </a>
               ) : (
@@ -49,7 +49,7 @@ export function ScrollingBanner() {
           {activeBanners.map((banner: any, index: number) => (
             <React.Fragment key={`dup-${index}`}>
               {banner.link ? (
-                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
+                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-emerald-400 hover:underline underline-offset-4 transition-colors">
                   {banner.text}
                 </a>
               ) : (
@@ -68,7 +68,7 @@ export function ScrollingBanner() {
           {activeBanners.map((banner: any, index: number) => (
             <React.Fragment key={`dup2-${index}`}>
               {banner.link ? (
-                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
+                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-emerald-400 hover:underline underline-offset-4 transition-colors">
                   {banner.text}
                 </a>
               ) : (
