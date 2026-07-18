@@ -5,10 +5,11 @@ import { srLatn } from 'date-fns/locale';
 interface FreeSlotsCalendarProps {
   scheduleList: any[];
   profesorId: string;
+  unavailableDates?: string[];
   onSlotClick: (date: string, startTime: string, endTime: string) => void;
 }
 
-export default function FreeSlotsCalendar({ scheduleList, profesorId, onSlotClick }: FreeSlotsCalendarProps) {
+export default function FreeSlotsCalendar({ scheduleList, profesorId, unavailableDates = [], onSlotClick }: FreeSlotsCalendarProps) {
   // Radno vreme kalendara od 08:00 do 22:00 (15 slotova)
   const HOURS = Array.from({ length: 15 }, (_, i) => i + 8);
   
@@ -36,6 +37,10 @@ export default function FreeSlotsCalendar({ scheduleList, profesorId, onSlotClic
     const now = new Date();
     // Ako je slot u prošlosti, ne može se zakazati
     if (slotStart < now) return false;
+
+    // Provera da li je profesor na odmoru tog dana
+    const slotDateStr = format(slotStart, 'yyyy-MM-dd');
+    if (unavailableDates.includes(slotDateStr)) return false;
 
     // Proveravamo da li postoji klasa koja se preklapa sa ovim slotom
     const overlap = professorClasses.some(cls => {
@@ -91,13 +96,14 @@ export default function FreeSlotsCalendar({ scheduleList, profesorId, onSlotClic
 
                 {/* Polja po danima */}
                 {weekDays.map((day, dayIdx) => {
-                  const isFree = isSlotFree(day, hour);
+                  const isAvailable = isSlotFree(day, hour);
+                  const isVacation = unavailableDates.includes(format(day, 'yyyy-MM-dd'));
                   
                   return (
                     <div 
                       key={dayIdx}
                       onClick={() => {
-                        if (isFree) {
+                        if (isAvailable) {
                           const dateStr = format(day, 'yyyy-MM-dd');
                           const startStr = `${hour.toString().padStart(2, '0')}:00`;
                           const endStr = `${(hour + 1).toString().padStart(2, '0')}:00`;
@@ -105,14 +111,18 @@ export default function FreeSlotsCalendar({ scheduleList, profesorId, onSlotClic
                         }
                       }}
                       className={`h-12 rounded-xl border transition-all duration-200 flex items-center justify-center ${
-                        isFree 
+                        isAvailable 
                           ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500 hover:text-emerald-300 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.05)]' 
+                          : isVacation
+                          ? 'bg-red-500/10 border-red-500/20 text-red-400 cursor-not-allowed'
                           : 'bg-slate-950/80 border-slate-800/50 text-slate-700 cursor-not-allowed'
                       }`}
-                      title={isFree ? 'Slobodan termin - Zakaži' : 'Zauzet termin ili prošlost'}
+                      title={isAvailable ? 'Slobodan termin - Zakaži' : isVacation ? 'Odmor' : 'Zauzet termin ili prošlost'}
                     >
-                      {isFree ? (
+                      {isAvailable ? (
                         <span className="text-base font-medium text-white drop-shadow-md">{hour.toString().padStart(2, '0')}:00</span>
+                      ) : isVacation ? (
+                        <span className="text-xs font-medium">Odmor</span>
                       ) : (
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>
                       )}

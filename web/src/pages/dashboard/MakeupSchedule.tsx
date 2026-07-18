@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useGetScheduleQuery, useGetUsersQuery } from '../../store/apiSlice';
+import { useGetScheduleQuery, useGetUsersQuery, useGetPublicProfessorsQuery, useScheduleMakeupClassMutation } from '../../store/apiSlice';
 import type { RootState } from '../../store/store';
 import FreeSlotsCalendar from './FreeSlotsCalendar';
 import MakeupClassModal from './MakeupClassModal';
@@ -9,23 +9,29 @@ import { Loader2, Search, X } from 'lucide-react';
 export default function MakeupSchedule() {
   const { user } = useSelector((state: RootState) => state.auth);
   
-  const { data: schedule = [], isLoading } = useGetScheduleQuery(undefined, {
+  const [filterUserId, setFilterUserId] = useState<string>('');
+  
+  const { data: schedule = [], isLoading: isLoadingSlots } = useGetScheduleQuery(undefined, {
     refetchOnFocus: true
   });
+  
+  const { data: professors = [] } = useGetPublicProfessorsQuery();
+
+  const [scheduleMakeup, { isLoading: isScheduling }] = useScheduleMakeupClassMutation();
 
   const [isMakeupModalOpen, setIsMakeupModalOpen] = useState(false);
   const [initialMakeupDate, setInitialMakeupDate] = useState('');
   const [initialMakeupStartTime, setInitialMakeupStartTime] = useState('');
   const [initialMakeupEndTime, setInitialMakeupEndTime] = useState('');
 
-  // Filteri
-  const [filterUserId, setFilterUserId] = useState<string>('');
+  const unavailableDates = professors.find((p: any) => p._id === filterUserId || p.id === filterUserId)?.unavailableDates || [];
+
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
   const { data: allUsers } = useGetUsersQuery({ page: 1, limit: 1000 });
 
-  if (isLoading) {
+  if (isLoadingSlots) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -37,6 +43,13 @@ export default function MakeupSchedule() {
   if (!['SUPER_ADMIN', 'ADMIN', 'PROFESOR'].includes(user?.role || '')) {
     return <div className="p-8 text-white">Pristup odbijen.</div>;
   }
+
+  const handleSlotSelected = (date: string, start: string, end: string) => {
+    setInitialMakeupDate(date);
+    setInitialMakeupStartTime(start);
+    setInitialMakeupEndTime(end);
+    setIsMakeupModalOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -105,14 +118,10 @@ export default function MakeupSchedule() {
       </div>
 
       <FreeSlotsCalendar 
-        scheduleList={schedule} 
-        profesorId={filterUserId === 'ALL' || !filterUserId ? (user?.role === 'PROFESOR' ? user.id : '') : filterUserId}
-        onSlotClick={(date, start, end) => {
-          setInitialMakeupDate(date);
-          setInitialMakeupStartTime(start);
-          setInitialMakeupEndTime(end);
-          setIsMakeupModalOpen(true);
-        }}
+        scheduleList={busySlots} 
+        profesorId={filterUserId}
+        unavailableDates={unavailableDates}
+        onSlotClick={handleSlotSelected}
       />
 
       <MakeupClassModal 

@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getSocket } from './lib/socket';
 import { apiSlice, useGetPublicSettingsQuery } from './store/apiSlice';
 import type { RootState } from './store/store';
-
+const ProfessorVacation = React.lazy(() => import('./pages/dashboard/ProfessorVacation'));
 // Enterprise Code Splitting (Lazy Loading) za Dashboard komponente
 const DashboardIndex = React.lazy(() => import('./pages/dashboard/DashboardIndex'));
 const UsersList = React.lazy(() => import('./pages/dashboard/UsersList'));
@@ -166,6 +166,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['UCENIK', 'KLIJENT']}>
                   <Certificates />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="vacation" 
+              element={
+                <ProtectedRoute allowedRoles={['PROFESOR']}>
+                  <ProfessorVacation />
                 </ProtectedRoute>
               } 
             />

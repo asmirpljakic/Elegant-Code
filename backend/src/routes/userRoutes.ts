@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, updateUser, createUser, getUserProfile, deleteUser, toggleUserStatus, getPublicProfessors, verifyUserManually } from '../controllers/userController';
+import { getUsers, updateUser, createUser, getUserProfile, deleteUser, toggleUserStatus, getPublicProfessors, verifyUserManually, updateVacation } from '../controllers/userController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -9,6 +9,9 @@ router.route('/me').get(protect, getUserProfile);
 
 // Dohvatanje javnih profesora (za probne časove, dostupno svima)
 router.route('/professors/public').get(protect, getPublicProfessors);
+
+// Ažuriranje odmora za profesora
+router.route('/vacation').put(protect, authorize('PROFESOR'), updateVacation);
 
 // Svi od navedenih mogu da listaju korisnike i dodaju nove (kontroler ograničava ko šta sme)
 router.route('/')

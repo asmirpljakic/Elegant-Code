@@ -30,6 +30,7 @@ export interface IUser extends Document {
       auth: string;
     };
   }>;
+  unavailableDates?: string[];
 }
 
 const UserSchema: Schema = new Schema({
@@ -73,7 +74,8 @@ const UserSchema: Schema = new Schema({
       p256dh: String,
       auth: String
     }
-  }]
+  }],
+  unavailableDates: [{ type: String }]
 }, { timestamps: true });
 
 // Indeks za brzu proveru isteklih članarina za učenike

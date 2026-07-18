@@ -16,15 +16,16 @@ export default function TrialClassModal({ isOpen, onClose, onSuccess }: TrialCla
   const [error, setError] = useState('');
 
   const { data: professors = [], isLoading: isLoadingUsers } = useGetPublicProfessorsQuery(undefined, { skip: !isOpen });
-  const { data: busySlots = [], isLoading: isLoadingSlots } = useGetProfessorBusySlotsQuery(profesorId, { skip: !profesorId || step !== 3 });
+  const { data: busySlotsData, isLoading: isLoadingSlots } = useGetProfessorBusySlotsQuery(profesorId, { skip: !profesorId || step !== 3 });
   
   const [scheduleTrial, { isLoading: isScheduling }] = useScheduleTrialClassMutation();
 
   if (!isOpen) return null;
 
-  // Profesori se sada direktno učitavaju sa /professors/public
-
   // Prilagođavamo busySlots da bi ih FreeSlotsCalendar prepoznao
+  const busySlots = busySlotsData?.classes || [];
+  const unavailableDates = busySlotsData?.unavailableDates || [];
+
   const formattedScheduleForCalendar = busySlots.map((slot: any) => ({
     ...slot,
     status: 'ZAKAZAN',
@@ -179,6 +180,7 @@ export default function TrialClassModal({ isOpen, onClose, onSuccess }: TrialCla
                 <FreeSlotsCalendar 
                   scheduleList={formattedScheduleForCalendar}
                   profesorId={profesorId}
+                  unavailableDates={unavailableDates}
                   onSlotClick={handleSlotSelected}
                 />
               )}

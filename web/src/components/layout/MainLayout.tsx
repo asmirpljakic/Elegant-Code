@@ -14,6 +14,7 @@ import {
   Award, 
   Video, 
   CalendarClock,
+  CalendarOff,
   Megaphone,
   Menu,
   X,
@@ -67,6 +68,12 @@ export default function MainLayout() {
       path: '/dashboard/certificates', 
       icon: Award,
       hidden: !['UCENIK', 'KLIJENT'].includes(user?.role || '') 
+    },
+    {
+      name: 'Odmor',
+      path: '/dashboard/vacation',
+      icon: CalendarOff,
+      hidden: user?.role !== 'PROFESOR'
     },
     { 
       name: 'Statistika',  

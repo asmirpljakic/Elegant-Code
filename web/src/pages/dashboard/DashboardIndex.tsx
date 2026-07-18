@@ -190,12 +190,12 @@ export default function DashboardIndex() {
     // Sortiranje i filtriranje
     const allClasses = scheduleData || [];
 
-    // Da li učenik sme da zakaže probni čas?
+    const currentUser = freshUser || user;
     const hasEverScheduledTrial = allClasses.some((cls: any) => 
       cls.topic === '[PROBNI CAS]' && 
-      cls.students.some((st: any) => st.studentId?._id === user?.id || st.studentId === user?.id)
+      cls.students.some((st: any) => st.studentId?._id === currentUser?.id || st.studentId?._id === currentUser?._id || st.studentId === currentUser?.id || st.studentId === currentUser?._id)
     );
-    const canScheduleTrial = user?.activePackage === 'NONE' && !hasEverScheduledTrial;
+    const canScheduleTrial = currentUser?.activePackage === 'NONE' && !hasEverScheduledTrial;
 
     const upcomingClasses = allClasses
       .filter((c: any) => c.status === 'ZAKAZAN' && isAfter(new Date(c.startTime), now))

@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import { format, startOfDay } from 'date-fns';
 import bcrypt from 'bcrypt';
 import { User, IUser } from '../models/User';
 import { ClassSession } from '../models/ClassSession';
 import { ActivityLog } from '../models/ActivityLog';
+import { Notification } from '../models/Notification';
 import { updateUserSchema, createUserSchema } from '@elegant-code/shared';
 import { sendEmail } from '../utils/email';
 import { getIO } from '../socket';
@@ -459,13 +461,121 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
 // @access  Private (Svi ulogovani korisnici)
 export const getPublicProfessors = async (req: Request, res: Response): Promise<void> => {
   try {
-    const professors = await User.find({ role: 'PROFESOR', isActive: true })
-      .select('_id firstName lastName email')
+    const professors = await User.find({ role: 'PROFESOR' })
+      .select('_id firstName lastName email unavailableDates')
       .lean();
     
     res.json(professors);
   } catch (error) {
     res.status(500).json({ error: 'Greška pri učitavanju profesora.' });
+  }
+};
+
+// @desc    Ažuriraj datume odmora profesora
+// @route   PUT /api/users/vacation
+// @access  Private/Profesor
+export const updateVacation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { unavailableDates } = req.body;
+    const userId = req.user?._id;
+
+    if (req.user?.role !== 'PROFESOR') {
+      res.status(403).json({ error: 'Samo profesori mogu postaviti odmor.' });
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: 'Korisnik nije pronađen.' });
+      return;
+    }
+
+    user.unavailableDates = unavailableDates;
+    await user.save();
+
+    let hasCancelledClasses = false;
+
+    // Automatsko otkazivanje časova koji padaju na odabrane datume
+    if (unavailableDates && unavailableDates.length > 0) {
+      const now = new Date();
+      const scheduledClasses = await ClassSession.find({
+        profesorId: userId,
+        status: 'ZAKAZAN',
+        startTime: { $gte: startOfDay(now) }
+      });
+
+      const notificationsToInsert = [];
+      const studentCancelledClasses = new Map<string, Date[]>();
+
+      for (const classSession of scheduledClasses) {
+        const classDateStr = format(classSession.startTime, 'yyyy-MM-dd');
+        
+        if (unavailableDates.includes(classDateStr)) {
+          // Ovaj čas pada na dan odmora, otkazujemo ga
+          classSession.status = 'OTKAZAN';
+          await classSession.save();
+          hasCancelledClasses = true;
+
+          // Beležimo koje časove je svaki učenik izgubio
+          for (const student of classSession.students) {
+            const sId = student.studentId.toString();
+            if (!studentCancelledClasses.has(sId)) {
+              studentCancelledClasses.set(sId, []);
+            }
+            studentCancelledClasses.get(sId)!.push(classSession.startTime);
+          }
+        }
+      }
+
+      // Obrada učenika kojima su otkazani časovi (grupisano)
+      for (const [sId, dates] of studentCancelledClasses.entries()) {
+        await User.findByIdAndUpdate(sId, {
+          $inc: { 'progress.makeupClassesOwed': dates.length }
+        });
+
+        const datesFormatted = dates.map(d => format(d, 'dd.MM.yyyy HH:mm')).join(', ');
+        notificationsToInsert.push({
+          userId: sId,
+          title: 'Čas otkazan - Odmor profesora 🏖️',
+          message: `Vaši zakazani časovi u terminima: ${datesFormatted} (ukupno: ${dates.length}) su otkazani zbog odmora profesora. Dodeljeno vam je pravo na ${dates.length} nadoknadu koju možete iskoristiti preko svog panela.`,
+          type: 'INFO'
+        });
+      }
+
+      // Slanje opštih notifikacija ostalim učenicima (koji nisu direktno pogođeni otkazivanjem sad)
+      const allProfessorClasses = await ClassSession.find({ profesorId: userId });
+      const allStudentIds = new Set<string>();
+      allProfessorClasses.forEach(c => {
+        c.students.forEach(s => allStudentIds.add(s.studentId.toString()));
+      });
+
+      Array.from(allStudentIds).forEach(studentId => {
+        // Ako već nismo obavestili učenika o konkretnom otkazanom času
+        if (!studentCancelledClasses.has(studentId)) {
+          notificationsToInsert.push({
+            userId: studentId,
+            title: 'Profesor na odmoru 🏖️',
+            message: `Vaš profesor ${user.firstName} ${user.lastName} je označio neke dane kao neradne. Ukoliko ste planirali časove u tom periodu, molimo vas da ih zakažete za drugi dan.`,
+            type: 'INFO'
+          });
+        }
+      });
+
+      if (notificationsToInsert.length > 0) {
+        await Notification.insertMany(notificationsToInsert);
+        getIO().emit('notifications_updated');
+      }
+    }
+
+    if (hasCancelledClasses) {
+      getIO().emit('schedule_updated');
+    }
+
+    getIO().emit('users_updated');
+    res.json({ message: 'Datumi odmora uspešno ažurirani.', unavailableDates: user.unavailableDates });
+  } catch (error) {
+    console.error('Update vacation error:', error);
+    res.status(500).json({ error: 'Greška pri čuvanju odmora.' });
   }
 };
 

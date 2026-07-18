@@ -264,6 +264,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Certificates'],
     }),
+    updateVacation: builder.mutation<any, { unavailableDates: string[] }>({
+      query: (data) => ({
+        url: '/users/vacation',
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Users', 'ClassSession'],
+    }),
   }),
 });
 
@@ -297,6 +305,7 @@ export const {
   useGetMyCertificatesQuery,
   useGetStudentCertificatesQuery,
   useApproveCertificateMutation,
+  useUpdateVacationMutation,
   useVerifyOtpMutation,
   useResendOtpMutation,
   useScheduleMakeupClassMutation,

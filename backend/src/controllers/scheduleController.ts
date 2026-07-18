@@ -110,6 +110,16 @@ export const createClass = async (req: Request, res: Response): Promise<void> =>
 
     // Funkcija za proveru preklapanja
     const checkOverlap = async (checkStart: Date, checkEnd: Date, profId: string, stIds: string[]) => {
+      // Provera da li je profesor na odmoru
+      const prof = await User.findById(profId).select('unavailableDates');
+      if (prof?.unavailableDates && prof.unavailableDates.length > 0) {
+        // Pretvaranje vremena u lokalnu vremensku zonu i ekstrakcija datuma u formatu YYYY-MM-DD
+        const startStr = checkStart.toLocaleString('sv-SE', { timeZone: 'Europe/Belgrade' }).split(' ')[0];
+        if (prof.unavailableDates.includes(startStr)) {
+          return true; // Profesor je na odmoru taj dan, vraćamo preklapanje
+        }
+      }
+
       const overlappingClasses = await ClassSession.find({
         status: 'ZAKAZAN',
         $and: [
@@ -721,6 +731,9 @@ export const getProfessorBusySlots = async (req: Request, res: Response): Promis
   try {
     const { profesorId } = req.params;
     
+    // Dohvatamo profesora da bismo vratili njegove neradne dane (odmor)
+    const profesor = await User.findById(profesorId).select('unavailableDates').lean();
+
     // Vraćamo samo časove koji su zakazani u budućnosti
     const classes = await ClassSession.find({
       profesorId,
@@ -728,7 +741,10 @@ export const getProfessorBusySlots = async (req: Request, res: Response): Promis
       endTime: { $gt: new Date() }
     }).select('startTime endTime').lean();
 
-    res.json(classes);
+    res.json({
+      classes,
+      unavailableDates: profesor?.unavailableDates || []
+    });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri učitavanju termina profesora' });
   }
@@ -825,6 +841,9 @@ export const scheduleTrialClass = async (req: Request, res: Response): Promise<v
       courseName, 
       timeStr
     );
+
+    // Emitovanje dogadjaja za klijente da bi se refrešovao scheduleData i sklonio baner u realnom vremenu
+    try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
 
     res.status(201).json(newClass);
   } catch (error) {

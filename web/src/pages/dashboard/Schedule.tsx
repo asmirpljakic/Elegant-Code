@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetScheduleQuery, useCreateClassMutation, useCompleteClassMutation, useCancelClassMutation, useGetUsersQuery, useUpdateClassMutation, useDeleteClassMutation, useDeleteCompletedClassesMutation } from '../../store/apiSlice';
+import { useGetScheduleQuery, useCreateClassMutation, useCompleteClassMutation, useCancelClassMutation, useGetUsersQuery, useUpdateClassMutation, useDeleteClassMutation, useDeleteCompletedClassesMutation, useGetPublicProfessorsQuery } from '../../store/apiSlice';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { Button } from '../../components/ui/Button';
@@ -29,6 +29,7 @@ export default function Schedule() {
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true
   });
+  const { data: professors = [] } = useGetPublicProfessorsQuery();
   
   const [createClass, { isLoading: isCreating }] = useCreateClassMutation();
   const [completeClass, { isLoading: isCompleting }] = useCompleteClassMutation();
@@ -180,6 +181,52 @@ export default function Schedule() {
     } catch (error) {
       alert('Greška pri izmeni časa');
     }
+  };
+
+  // Provera da li je profesor na odmoru tog dana
+  const isVacationDay = useMemo(() => {
+    let targetProfId = '';
+    if (user?.role === 'PROFESOR') {
+      targetProfId = user.id;
+    } else if (filterUserId) {
+      targetProfId = filterUserId;
+    }
+    
+    if (targetProfId && selectedDate) {
+      const prof = professors.find((p: any) => p._id === targetProfId || p.id === targetProfId);
+      if (prof?.unavailableDates?.includes(format(selectedDate, 'yyyy-MM-dd'))) {
+        return true;
+      }
+    }
+    return false;
+  }, [selectedDate, filterUserId, user, professors]);
+
+  const handleCreateClass = () => {
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+    const nextTwoHours = new Date(nextHour);
+    nextTwoHours.setHours(nextHour.getHours() + 1);
+    
+    // Pretvori u lokalno vreme formata YYYY-MM-DDTHH:mm
+    const offset = now.getTimezoneOffset() * 60000;
+    const localNextHour = new Date(nextHour.getTime() - offset).toISOString().slice(0, 16);
+    const localNextTwoHours = new Date(nextTwoHours.getTime() - offset).toISOString().slice(0, 16);
+    const localDateOnly = new Date(now.getTime() - offset).toISOString().slice(0, 10);
+
+    // Reset svih polja forme
+    setCourseName('OSNOVNI');
+    setProfesorId('');
+    setStartTime(localNextHour);
+    setEndTime(localNextTwoHours);
+    setTopic('');
+    setMeetingLink('');
+    setSelectedStudents([]);
+    setIsRecurring(false);
+    setRecurringDays([]);
+    setUntilDate('');
+    setRecurringStartDate(localDateOnly);
+    setIsCreateModalOpen(true);
   };
 
   // Filtriranje rasporeda
@@ -409,36 +456,14 @@ export default function Schedule() {
           </div>
 
           {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'PROFESOR') && (
-            <Button onClick={() => {
-              // Izračunaj sledeći pun sat za podrazumevano vreme
-              const now = new Date();
-              const nextHour = new Date(now);
-              nextHour.setHours(now.getHours() + 1, 0, 0, 0);
-              const nextTwoHours = new Date(nextHour);
-              nextTwoHours.setHours(nextHour.getHours() + 1);
-              
-              // Pretvori u lokalno vreme formata YYYY-MM-DDTHH:mm
-              const offset = now.getTimezoneOffset() * 60000;
-              const localNextHour = new Date(nextHour.getTime() - offset).toISOString().slice(0, 16);
-              const localNextTwoHours = new Date(nextTwoHours.getTime() - offset).toISOString().slice(0, 16);
-              const localDateOnly = new Date(now.getTime() - offset).toISOString().slice(0, 10);
-
-              // Reset svih polja forme
-              setCourseName('OSNOVNI');
-              setProfesorId('');
-              setStartTime(localNextHour);
-              setEndTime(localNextTwoHours);
-              setTopic('');
-              setMeetingLink('');
-              setSelectedStudents([]);
-              setIsRecurring(false);
-              setRecurringDays([]);
-              setUntilDate('');
-              setRecurringStartDate(localDateOnly);
-              setIsCreateModalOpen(true);
-            }} className="flex items-center">
-              <Plus className="w-5 h-5 mr-2" />
-              Zakaži Čas
+            <Button 
+              onClick={handleCreateClass}
+              disabled={isVacationDay}
+              className={`gap-2 ${isVacationDay ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={isVacationDay ? 'Profesor je na odmoru ovaj dan' : ''}
+            >
+              <Plus className="w-5 h-5" />
+              Novi Čas
             </Button>
           )}
 

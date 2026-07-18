@@ -48,8 +48,9 @@ export default function StudentDashboard() {
     cls.topic === '[PROBNI CAS]' && 
     cls.students.some((st: any) => st.studentId?._id === user?._id || st.studentId === user?._id)
   );
-  const canScheduleTrial = user?.role === 'UCENIK' && user?.activePackage === 'NONE' && !hasEverScheduledTrial;
-
+  // Osiguravamo da je activePackage zaista NONE
+  const isPackageNone = !user?.activePackage || user?.activePackage === 'NONE';
+  const canScheduleTrial = user?.role === 'UCENIK' && isPackageNone && !hasEverScheduledTrial;
   // Logika za značke
   const badges = [
     {
