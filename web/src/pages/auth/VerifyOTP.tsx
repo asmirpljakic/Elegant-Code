@@ -22,6 +22,7 @@ export default function VerifyOTP() {
   
   const searchParams = new URLSearchParams(location.search);
   const email = searchParams.get('email');
+  const codeParam = searchParams.get('code');
 
   useEffect(() => {
     if (!email) {
@@ -29,6 +30,12 @@ export default function VerifyOTP() {
     }
   }, [email, navigate]);
 
+  useEffect(() => {
+    // Automatsko popunjavanje ako kod stigne iz URL-a (kad korisnik klikne link u mailu)
+    if (codeParam && codeParam.length === 6) {
+      setOtp(codeParam.split(''));
+    }
+  }, [codeParam]);
   const handleChange = (index: number, value: string) => {
     if (isNaN(Number(value))) return;
 
