@@ -24,13 +24,48 @@ function App() {
   useEffect(() => {
     const socket = getSocket();
 
+    // Zvučni efekat za novu notifikaciju
+    const playNotificationSound = () => {
+      try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        // Prijatan, nenametljiv dupli "ping" zvuk
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1); // A5
+        
+        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+      } catch (err) {
+        console.log("Audio autoplay blocked or not supported", err);
+      }
+    };
+
     socket.on('users_updated', () => {
       console.log('Primljen users_updated signal, osvežavam podatke...');
       dispatch(apiSlice.util.invalidateTags(['Users', 'ClassSession']));
     });
 
+    socket.on('new_notification', () => {
+      console.log('Stigla je nova notifikacija!');
+      dispatch(apiSlice.util.invalidateTags(['Notifications']));
+      playNotificationSound();
+    });
+
     return () => {
       socket.off('users_updated');
+      socket.off('new_notification');
     };
   }, [dispatch]);
   return (
