@@ -44,14 +44,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function Analytics() {
   const { user } = useSelector((state: RootState) => state.auth);
   
+  const { data, isLoading } = useGetAnalyticsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
   // Samo admin i superadmin
   if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
     return <Navigate to="/dashboard" replace />;
   }
-
-  const { data, isLoading } = useGetAnalyticsQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
 
   if (isLoading) {
     return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;

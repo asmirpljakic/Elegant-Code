@@ -22,6 +22,8 @@ export default function StudentDashboard() {
     refetchOnFocus: true
   });
 
+  const [isTrialModalOpen, setIsTrialModalOpen] = React.useState(false);
+
   if (isUserLoading || isScheduleLoading) {
     return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
@@ -40,8 +42,6 @@ export default function StudentDashboard() {
     .sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   const nextClass = upcomingClasses[0];
-
-  const [isTrialModalOpen, setIsTrialModalOpen] = React.useState(false);
 
   // Da li učenik sme da zakaže probni čas?
   const hasEverScheduledTrial = scheduleData.some((cls: any) => 
