@@ -23,6 +23,10 @@ import { initSocket } from './socket';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// VAŽNO ZA RENDER: Pošto je app iza Load Balancera (Proxy), moramo reći Expressu da veruje proxy-ju
+// kako bi rate limiter čitao pravu IP adresu korisnika (x-forwarded-for), a ne IP adresu Render servera.
+app.set('trust proxy', 1);
+
 // Security Middleware (Enterprise nivo)
 // 1. HTTP zaglavlja za zaštitu od uobičajenih ranjivosti
 app.use(helmet());
