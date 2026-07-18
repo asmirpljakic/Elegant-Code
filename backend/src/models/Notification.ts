@@ -65,12 +65,14 @@ NotificationSchema.post('save', async function (doc) {
 });
 
 // Hook za insertMany (kada se kreiraju masovno)
-NotificationSchema.post('insertMany', async function (docs) {
+NotificationSchema.post('insertMany', async function (docs: any) {
   try {
     const { User } = await import('./User');
     const { sendWebPushNotification } = await import('../utils/webPush');
 
-    for (const doc of docs) {
+    const documents = Array.isArray(docs) ? docs : [docs];
+
+    for (const doc of documents) {
       const user = await User.findById(doc.userId);
       if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
         const payload = {
