@@ -109,9 +109,10 @@ export default function StudentDashboard() {
               Zakaži Besplatan Čas
             </button>
           </div>
+          </div>
         </div>
+        </>
       )}
-
       {/* 1. SEKCIJA NAPRETKA (XP & Level) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-10 relative overflow-hidden">
         {/* Dekorativni pozadinski sjaj */}
