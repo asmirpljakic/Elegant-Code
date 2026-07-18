@@ -21,6 +21,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({ isOpen, onClos
   const [createPhone, setCreatePhone] = useState('');
   const [createRole, setCreateRole] = useState('UCENIK');
   const [createPackage, setCreatePackage] = useState('NONE');
+  const [createAttendanceMode, setCreateAttendanceMode] = useState('ONLINE');
 
   if (!isOpen) return null;
 
@@ -38,6 +39,10 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({ isOpen, onClos
         payload.role = createRole;
         payload.activePackage = createPackage;
       }
+      
+      if (['UCENIK', 'KLIJENT'].includes(payload.role || createRole)) {
+        payload.attendanceMode = createAttendanceMode;
+      }
 
       await createUser(payload).unwrap();
       
@@ -48,6 +53,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({ isOpen, onClos
       setCreatePhone('');
       setCreateRole('UCENIK');
       setCreatePackage('NONE');
+      setCreateAttendanceMode('ONLINE');
       
       onClose();
     } catch (err: any) {
@@ -158,6 +164,20 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({ isOpen, onClos
                   </select>
                 </div>
               </div>
+            </div>
+          )}
+
+          {['UCENIK', 'KLIJENT'].includes(createRole) && (
+            <div className="pt-4 border-t border-slate-800">
+              <label className="block text-sm font-medium text-slate-300 mb-2">Način Pohađanja Nastave</label>
+              <select 
+                value={createAttendanceMode} 
+                onChange={(e) => setCreateAttendanceMode(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="ONLINE">ONLINE (Preko Google Meet-a)</option>
+                <option value="UZIVO">UŽIVO (Fizički u učionici)</option>
+              </select>
             </div>
           )}
 

@@ -194,7 +194,12 @@ export default function StudentDashboard() {
                 </p>
               </div>
 
-              {nextClass.meetingLink ? (
+              {user?.attendanceMode === 'UZIVO' ? (
+                <div className="w-full flex items-center justify-center bg-amber-500/20 text-amber-500 py-3 rounded-xl font-medium border border-amber-500/30">
+                  <Target className="w-5 h-5 mr-2" />
+                  Nastava se održava uživo u školi
+                </div>
+              ) : nextClass.meetingLink ? (
                 <a 
                   href={nextClass.meetingLink}
                   target="_blank"

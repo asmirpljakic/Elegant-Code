@@ -18,9 +18,19 @@ export const checkAndGenerateMeetLinks = async () => {
         { meetingLink: null },
         { meetingLink: '' }
       ]
-    });
+    }).populate('students.studentId');
 
     for (const cls of upcomingClasses) {
+      // Provera da li su svi učenici UZIVO
+      const allUzivo = cls.students.length > 0 && cls.students.every((st: any) => st.studentId?.attendanceMode === 'UZIVO');
+      
+      if (allUzivo) {
+        console.log(`Preskačem Meet link za čas ${cls._id} jer su svi učenici UŽIVO.`);
+        cls.meetingLink = 'UZIVO_NASTAVA';
+        await cls.save();
+        continue;
+      }
+
       console.log(`Pokušavam da generišem Meet link za čas: ${cls._id}`);
       const link = await createMeetingLink(cls.startTime, cls.endTime, cls.topic || 'Čas - Elegant Code', cls.profesorId.toString());
       

@@ -21,6 +21,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose }) =
   const [editPhone, setEditPhone] = useState('');
   const [editRole, setEditRole] = useState('');
   const [editPackage, setEditPackage] = useState('');
+  const [editAttendanceMode, setEditAttendanceMode] = useState('ONLINE');
 
   useEffect(() => {
     if (user) {
@@ -30,6 +31,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose }) =
       setEditPhone(user.phoneNumber || '');
       setEditRole(user.role);
       setEditPackage(user.activePackage);
+      setEditAttendanceMode(user.attendanceMode || 'ONLINE');
     }
   }, [user]);
 
@@ -47,6 +49,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose }) =
       if (currentUser?.role !== 'PROFESOR') {
         payload.role = editRole;
         payload.activePackage = editPackage;
+      }
+      
+      if (['UCENIK', 'KLIJENT'].includes(payload.role || editRole)) {
+        payload.attendanceMode = editAttendanceMode;
       }
 
       await updateUser({
@@ -153,6 +159,20 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose }) =
                   </select>
                 </div>
               </div>
+            </div>
+          )}
+
+          {['UCENIK', 'KLIJENT'].includes(editRole) && (
+            <div className="pt-4 border-t border-slate-800">
+              <label className="block text-sm font-medium text-slate-300 mb-2">Način Pohađanja Nastave</label>
+              <select 
+                value={editAttendanceMode} 
+                onChange={(e) => setEditAttendanceMode(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="ONLINE">ONLINE (Preko Google Meet-a)</option>
+                <option value="UZIVO">UŽIVO (Fizički u učionici)</option>
+              </select>
             </div>
           )}
 

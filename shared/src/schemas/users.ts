@@ -7,7 +7,8 @@ export const createUserSchema = z.object({
   password: z.string().min(6, "Lozinka mora imati bar 6 karaktera"),
   phoneNumber: z.string().optional(),
   role: z.enum(['SUPER_ADMIN', 'ADMIN', 'PROFESOR', 'UCENIK', 'KLIJENT', 'GOST']).default('UCENIK'),
-  activePackage: z.enum(['NONE', 'OSNOVNI', 'SREDNJI', 'NAPREDNI']).default('NONE')
+  activePackage: z.enum(['NONE', 'OSNOVNI', 'SREDNJI', 'NAPREDNI']).default('NONE'),
+  attendanceMode: z.enum(['ONLINE', 'UZIVO']).default('ONLINE')
 });
 
 export const updateUserSchema = z.object({
@@ -18,6 +19,7 @@ export const updateUserSchema = z.object({
   phoneNumber: z.string().optional(),
   role: z.enum(['SUPER_ADMIN', 'ADMIN', 'PROFESOR', 'UCENIK', 'KLIJENT', 'GOST']).optional(),
   activePackage: z.enum(['NONE', 'OSNOVNI', 'SREDNJI', 'NAPREDNI']).optional(),
+  attendanceMode: z.enum(['ONLINE', 'UZIVO']).optional(),
   makeupClassesOwed: z.number().min(0).optional()
 });
 
@@ -32,6 +34,7 @@ export interface UserResponse {
   phoneNumber?: string;
   role: string;
   activePackage: string;
+  attendanceMode: 'ONLINE' | 'UZIVO';
   progress?: {
     currentLevel: number;
     totalClassesAttended: number;

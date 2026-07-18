@@ -7,6 +7,7 @@ export interface IUser extends Document {
   password?: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'PROFESOR' | 'UCENIK' | 'KLIJENT' | 'GOST';
   activePackage: 'OSNOVNI' | 'SREDNJI' | 'NAPREDNI' | 'NONE';
+  attendanceMode: 'ONLINE' | 'UZIVO';
   phoneNumber: string;
   progress: {
     currentLevel: number;
@@ -46,6 +47,11 @@ const UserSchema: Schema = new Schema({
     type: String, 
     enum: ['OSNOVNI', 'SREDNJI', 'NAPREDNI', 'NONE'], 
     default: 'NONE' 
+  },
+  attendanceMode: {
+    type: String,
+    enum: ['ONLINE', 'UZIVO'],
+    default: 'ONLINE'
   },
   progress: {
     currentLevel: { type: Number, default: 1 },

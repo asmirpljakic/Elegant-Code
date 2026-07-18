@@ -10,7 +10,7 @@ import {
   useVerifyUserManuallyMutation
 } from '../../store/apiSlice';
 import { Button } from '../../components/ui/Button';
-import { Search, Plus, Filter, MoreVertical, Edit2, Shield, Trash2, Power, UserPlus, FileSignature, Minus, Loader2, ChevronLeft, ChevronRight, X, User as UserIcon, Info, Award, CheckCircle } from 'lucide-react';
+import { Search, Plus, Filter, MoreVertical, Edit2, Shield, Trash2, Power, UserPlus, FileSignature, Minus, Loader2, ChevronLeft, ChevronRight, X, User as UserIcon, Info, Award, CheckCircle, Building, Monitor } from 'lucide-react';
 import type { UserResponse } from '@elegant-code/shared';
 import { useDebounce } from '../../hooks/useDebounce';
 import { UserDetailsModal } from '../../components/users/UserDetailsModal';
@@ -253,7 +253,16 @@ export default function UsersList() {
                           {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                         </div>
                         <div>
-                          <div className="font-medium text-white">{user.firstName} {user.lastName}</div>
+                          <div className="font-medium text-white flex items-center gap-2">
+                            {user.firstName} {user.lastName}
+                            {['UCENIK', 'KLIJENT'].includes(user.role) && (
+                              user.attendanceMode === 'UZIVO' ? (
+                                <Building className="w-4 h-4 text-amber-500" title="Nastava uživo" />
+                              ) : (
+                                <Monitor className="w-4 h-4 text-blue-400" title="Online nastava" />
+                              )
+                            )}
+                          </div>
                           <div className="text-sm text-slate-400">{user.email}</div>
                           {user.phoneNumber && (
                             <div className="text-xs text-slate-500 mt-0.5">{user.phoneNumber}</div>

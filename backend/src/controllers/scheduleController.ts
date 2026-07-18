@@ -549,7 +549,7 @@ export const updateClass = async (req: Request, res: Response): Promise<void> =>
     const { topic, meetingLink, startTime, endTime } = req.body;
     const updateAll = req.query.all === 'true';
 
-    const classSession = await ClassSession.findById(id);
+    const classSession = await ClassSession.findById(id).populate('students.studentId');
     if (!classSession) {
       res.status(404).json({ error: 'Čas nije pronađen' });
       return;
@@ -594,13 +594,18 @@ export const updateClass = async (req: Request, res: Response): Promise<void> =>
     if (meetingLink && meetingLink.trim() !== '' && meetingLink !== classSession.meetingLink) {
       setTimeout(async () => {
         try {
-          const notifications = classSession.students.map((st: any) => ({
-            userId: st.studentId,
-            title: 'Spreman Link za Čas 📹',
-            message: `Profesor je upravo dodao Google Meet link. Tvoj čas (${classSession.courseName} nivo) uskoro počinje!`,
-            type: 'INFO'
-          }));
-          await Notification.insertMany(notifications);
+          const notifications = classSession.students
+            .filter((st: any) => st.studentId && st.studentId.attendanceMode !== 'UZIVO')
+            .map((st: any) => ({
+              userId: st.studentId._id,
+              title: 'Spreman Link za Čas 📹',
+              message: `Profesor je upravo dodao Google Meet link. Tvoj čas (${classSession.courseName} nivo) uskoro počinje!`,
+              type: 'INFO'
+            }));
+            
+          if (notifications.length > 0) {
+            await Notification.insertMany(notifications);
+          }
         } catch (err) {
           console.error('Greška pri slanju notifikacije za meet link:', err);
         }
