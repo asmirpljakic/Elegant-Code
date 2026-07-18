@@ -29,11 +29,11 @@ export function ScrollingBanner() {
           {activeBanners.map((banner: any, index: number) => (
             <React.Fragment key={index}>
               {banner.link ? (
-                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-sm hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
+                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
                   {banner.text}
                 </a>
               ) : (
-                <span className="mx-8 font-medium text-sm">
+                <span className="mx-8 font-medium text-base">
                   {banner.text}
                 </span>
               )}
@@ -49,11 +49,11 @@ export function ScrollingBanner() {
           {activeBanners.map((banner: any, index: number) => (
             <React.Fragment key={`dup-${index}`}>
               {banner.link ? (
-                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-sm hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
+                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
                   {banner.text}
                 </a>
               ) : (
-                <span className="mx-8 font-medium text-sm">
+                <span className="mx-8 font-medium text-base">
                   {banner.text}
                 </span>
               )}
@@ -68,11 +68,11 @@ export function ScrollingBanner() {
           {activeBanners.map((banner: any, index: number) => (
             <React.Fragment key={`dup2-${index}`}>
               {banner.link ? (
-                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-sm hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
+                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium text-base hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
                   {banner.text}
                 </a>
               ) : (
-                <span className="mx-8 font-medium text-sm">
+                <span className="mx-8 font-medium text-base">
                   {banner.text}
                 </span>
               )}
@@ -90,7 +90,7 @@ export function ScrollingBanner() {
           100% { transform: translateX(-66.66%); } /* Imamo 3 ista bloka, prelazimo prva 2 da bi loop bio savršen */
         }
         .animate-marquee {
-          animation: marquee 35s linear infinite;
+          animation: marquee 60s linear infinite;
         }
         .animate-marquee:hover {
           animation-play-state: paused;
