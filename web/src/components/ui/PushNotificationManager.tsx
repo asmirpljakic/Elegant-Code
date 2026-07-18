@@ -66,8 +66,8 @@ export const PushNotificationManager = () => {
         throw new Error('VAPID ključ nije pronađen.');
       }
 
-      // Registrujemo Service Worker ako nije već
-      const registration = await navigator.serviceWorker.register('/sw.ts', { type: 'module' });
+      // Registrujemo Service Worker (PWA kompajlira sw.ts u sw.js)
+      const registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
       // Pravimo pretplatu
