@@ -27,6 +27,10 @@ const PORT = process.env.PORT || 5000;
 // kako bi rate limiter čitao pravu IP adresu korisnika (x-forwarded-for), a ne IP adresu Render servera.
 app.set('trust proxy', 1);
 
+// OBAVEZNO: CORS mora biti prvi middleware kako bi svaki odgovor (čak i greške) imao CORS zaglavlja
+app.use(cors());
+app.use(express.json());
+
 // Security Middleware (Enterprise nivo)
 // 1. HTTP zaglavlja za zaštitu od uobičajenih ranjivosti
 app.use(helmet());
@@ -52,9 +56,7 @@ app.use('/api/auth', authLimiter);
 // 3. Sanitizacija ulaznih podataka (sprečavanje NoSQL Injection napada)
 app.use(mongoSanitize());
 
-// Standardni middleware
-app.use(cors());
-app.use(express.json());
+// Standardni middleware (CORS i JSON parser su pomereni na vrh fajla)
 
 // Onemogući keširanje za sve API rute (rešava problem sa brauzerima koji ignorišu polling)
 app.use('/api', (req, res, next) => {
