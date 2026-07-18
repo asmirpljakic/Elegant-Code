@@ -25,9 +25,11 @@ export const googleCallback = async (req: Request, res: Response) => {
     await handleCallback(code, userId);
     
     // Nakon uspešne autorizacije, vrati korisnika nazad na dashboard/google-meet
-    res.redirect('http://localhost:5173/dashboard/google-meet?google=success');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/dashboard/google-meet?google=success`);
   } catch (error) {
     console.error('Greška u Google Callback-u:', error);
-    res.redirect('http://localhost:5173/dashboard/google-meet?google=error');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/dashboard/google-meet?google=error`);
   }
 };
