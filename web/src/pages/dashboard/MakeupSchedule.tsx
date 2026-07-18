@@ -10,8 +10,7 @@ export default function MakeupSchedule() {
   const { user } = useSelector((state: RootState) => state.auth);
   
   const { data: schedule = [], isLoading } = useGetScheduleQuery(undefined, {
-    pollingInterval: 10000,
-    skipPollingIfUnfocused: true,
+    refetchOnFocus: true
   });
 
   const [isMakeupModalOpen, setIsMakeupModalOpen] = useState(false);

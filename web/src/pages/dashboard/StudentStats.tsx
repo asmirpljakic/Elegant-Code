@@ -6,10 +6,9 @@ import { Award, BookOpen, Star, TrendingUp } from 'lucide-react';
 export default function StudentStats() {
   const { user: authUser } = useSelector((state: RootState) => state.auth);
   
-  // Dohvataj "žive" podatke u realnom vremenu (na svakih 5 sekundi u pozadini)
+  // Dohvataj "žive" podatke samo kada dođe socket obaveštenje ili korisnik refokusira tab
   const { data: me } = useGetMeQuery(undefined, {
     skip: !authUser,
-    pollingInterval: 5000,
     refetchOnFocus: true,
   });
 

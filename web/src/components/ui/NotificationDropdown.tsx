@@ -15,10 +15,9 @@ export function NotificationDropdown() {
 
   const [visibleCount, setVisibleCount] = useState(6);
 
-  // Zbog brzine promene, refetchujemo na svaki fokus i često proveravamo (real-time doživljaj)
+  // Komponenta se osvežava isključivo preko WebSocket invalidacije (App.tsx)
   const { data, isLoading } = useGetNotificationsQuery({ limit: visibleCount }, {
-    refetchOnFocus: true,
-    pollingInterval: 3000 // Proveravaj na svake 3 sekunde za real-time notifikacije
+    refetchOnFocus: true
   });
 
   const notifications = data?.notifications || [];

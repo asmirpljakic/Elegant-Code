@@ -19,7 +19,6 @@ export default function StudentDashboard() {
   });
 
   const { data: scheduleData = [], isLoading: isScheduleLoading } = useGetScheduleQuery(undefined, {
-    pollingInterval: 30000,
     refetchOnFocus: true
   });
 

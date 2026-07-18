@@ -17,8 +17,7 @@ export default function ProfessorDashboard() {
 
   const { data: scheduleData, isLoading: isScheduleLoading } = useGetScheduleQuery(undefined, {
     skip: user?.role !== 'PROFESOR',
-    refetchOnMountOrArgChange: true,
-    pollingInterval: 10000
+    refetchOnMountOrArgChange: true
   });
 
   if (isUsersLoading || isScheduleLoading) {
