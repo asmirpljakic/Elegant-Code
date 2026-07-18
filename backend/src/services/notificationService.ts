@@ -6,12 +6,11 @@ export const createAndSendNotification = async (payload: any | any[]) => {
   try {
     const docs = Array.isArray(payload) ? payload : [payload];
     if (docs.length === 0) return;
-
-    // 1. Zapiši u bazu
-    await Notification.insertMany(docs);
+    // 1. Zapiši u bazu i uzmi povratne vrednosti
+    const insertedDocs = await Notification.insertMany(docs);
 
     // 2. Pošalji Push Notifikacije
-    for (const doc of docs) {
+    for (const doc of insertedDocs) {
       if (!doc.userId || !doc.message) continue;
 
       const user = await User.findById(doc.userId);
