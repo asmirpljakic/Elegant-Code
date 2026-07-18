@@ -232,22 +232,20 @@ export const createClass = async (req: Request, res: Response): Promise<void> =>
       console.error('Socket.IO emit error:', e);
     }
 
-    res.status(201).json({ message: `Uspešno kreirano ${classesToCreate.length} ponavljajućih časova.`, classesToCreate });
-    
     // Asinhrono kreiranje notifikacija za sve izabrane učenike
-    setTimeout(async () => {
-      try {
-        const notifications = studentIds.map((stId: string) => ({
-          userId: stId,
-          title: 'Novi Čas Zakazan',
-          message: `Zakazan vam je novi ciklus časova: ${courseName}.`,
-          type: 'INFO'
-        }));
-        await Notification.insertMany(notifications);
-      } catch (err) {
-        console.error('Greška pri kreiranju notifikacija za novi čas:', err);
-      }
-    }, 0);
+    try {
+      const notifications = studentIds.map((stId: string) => ({
+        userId: stId,
+        title: 'Novi Čas Zakazan',
+        message: `Zakazan vam je novi ciklus časova: ${courseName}.`,
+        type: 'INFO'
+      }));
+      await Notification.insertMany(notifications);
+    } catch (err) {
+      console.error('Greška pri kreiranju notifikacija za novi čas:', err);
+    }
+
+    res.status(201).json({ message: `Uspešno kreirano ${classesToCreate.length} ponavljajućih časova.`, classesToCreate });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri zakazivanju časa' });
   }
@@ -468,52 +466,47 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
       // Emitovanje dogadjaja za klijente
       try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
 
-      res.json({ message: 'Ceo predstojeći ciklus je obrisan' });
-      
       // Notifikacija
       if (classSession.students && classSession.students.length > 0) {
-        setTimeout(async () => {
-          try {
-            const notifications = classSession.students.map((st: any) => ({
-              userId: st.studentId,
-              title: 'Ciklus Časova Otkazan',
-              message: `Otkazan je vaš predstojeći ciklus časova (${classSession.courseName} nivo). Bez brige, ukoliko imate pravo na nadoknadu, profesor će uskoro zakazati nove termine, o čemu ćete biti obavešteni novom notifikacijom!`,
-              type: 'WARNING'
-            }));
-            await Notification.insertMany(notifications);
-          } catch (err) {
-            console.error('Notification error:', err);
-          }
-        }, 0);
+        try {
+          const notifications = classSession.students.map((st: any) => ({
+            userId: st.studentId,
+            title: 'Ciklus Časova Otkazan',
+            message: `Otkazan je vaš predstojeći ciklus časova (${classSession.courseName} nivo). Bez brige, ukoliko imate pravo na nadoknadu, profesor će uskoro zakazati nove termine, o čemu ćete biti obavešteni novom notifikacijom!`,
+            type: 'WARNING'
+          }));
+          await Notification.insertMany(notifications);
+        } catch (err) {
+          console.error('Notification error:', err);
+        }
       }
+
+      res.json({ message: 'Ceo predstojeći ciklus je obrisan' });
 
     } else {
       await rollbackStudentProgress(classSession);
       await ClassSession.findByIdAndDelete(id);
       // Emitovanje dogadjaja za klijente
       try { getIO().emit('users_updated'); } catch (e) { console.error('Socket.IO emit error:', e); }
-
-      res.json({ message: 'Čas je uspešno obrisan' });
-
       // Notifikacija
       if (classSession.status === 'ZAKAZAN' && classSession.students && classSession.students.length > 0) {
-        setTimeout(async () => {
-          try {
-            const d = new Date(classSession.startTime);
-            const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}. u ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}h`;
+        try {
+          const d = new Date(classSession.startTime);
+          const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}. u ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}h`;
 
-            const notifications = classSession.students.map((st: any) => ({
-              userId: st.studentId,
-              title: 'Čas Otkazan',
-              message: `Vaš čas zakazan za ${formattedDate} je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
-              type: 'WARNING'
-            }));
-            await Notification.insertMany(notifications);
-          } catch (err) {
-            console.error('Notification error:', err);
-          }
-        }, 0);
+          const notifications = classSession.students.map((st: any) => ({
+            userId: st.studentId,
+            title: 'Čas Otkazan',
+            message: `Vaš čas zakazan za ${formattedDate} je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
+            type: 'WARNING'
+          }));
+          await Notification.insertMany(notifications);
+        } catch (err) {
+          console.error('Notification error:', err);
+        }
       }
+
+      res.json({ message: 'Čas je uspešno obrisan' });
     }
   } catch (error: any) {
     console.error('API Error in deleteClass:', error);
