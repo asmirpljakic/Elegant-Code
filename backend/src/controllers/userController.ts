@@ -8,6 +8,7 @@ import { Notification } from '../models/Notification';
 import { updateUserSchema, createUserSchema } from '@elegant-code/shared';
 import { sendEmail } from '../utils/email';
 import { getIO } from '../socket';
+import { createAndSendNotification } from '../services/notificationService';
 
 // @desc    Dohvati profil trenutnog korisnika (sa uvek svežim XP-om)
 // @route   GET /api/users/me
@@ -562,9 +563,9 @@ export const updateVacation = async (req: Request, res: Response): Promise<void>
       });
 
       if (notificationsToInsert.length > 0) {
-        await Notification.insertMany(notificationsToInsert);
-        getIO().emit('notifications_updated');
+        await createAndSendNotification(notificationsToInsert);
       }
+      getIO().emit('notifications_updated');
     }
 
     if (hasCancelledClasses) {

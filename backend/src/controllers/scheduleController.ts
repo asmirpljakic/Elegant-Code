@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ClassSession } from '../models/ClassSession';
 import { User } from '../models/User';
 import { ActivityLog } from '../models/ActivityLog';
-import { Notification } from '../models/Notification';
+import { createAndSendNotification } from '../services/notificationService';
 import { createScheduleSchema } from '@elegant-code/shared';
 import mongoose from 'mongoose';
 import { sendTrialClassNotification } from '../utils/mailer';
@@ -240,7 +240,7 @@ export const createClass = async (req: Request, res: Response): Promise<void> =>
         message: `Zakazan vam je novi ciklus časova: ${courseName}.`,
         type: 'INFO'
       }));
-      await Notification.insertMany(notifications);
+      await createAndSendNotification(notifications);
     } catch (err) {
       console.error('Greška pri kreiranju notifikacija za novi čas:', err);
     }
@@ -315,7 +315,7 @@ export const completeClass = async (req: Request, res: Response): Promise<void> 
 
         // Notifikacija za završen čas i XP
         const leveledUp = student.progress.currentLevel > oldLevel;
-        await Notification.create({
+        await createAndSendNotification({
           userId: student._id,
           title: leveledUp ? 'Novi Nivo Osvojen! 🎉' : 'Čas Završen',
           message: leveledUp 
@@ -410,7 +410,7 @@ export const cancelClass = async (req: Request, res: Response): Promise<void> =>
         }
 
         // Notifikacija za učenika
-        await Notification.create({
+        await createAndSendNotification({
           userId: student._id,
           title: 'Čas je Otkazan ❌',
           message: messageText,
@@ -475,7 +475,7 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
             message: `Otkazan je vaš predstojeći ciklus časova (${classSession.courseName} nivo). Bez brige, ukoliko imate pravo na nadoknadu, profesor će uskoro zakazati nove termine, o čemu ćete biti obavešteni novom notifikacijom!`,
             type: 'WARNING'
           }));
-          await Notification.insertMany(notifications);
+          await createAndSendNotification(notifications);
         } catch (err) {
           console.error('Notification error:', err);
         }
@@ -500,7 +500,7 @@ export const deleteClass = async (req: Request, res: Response): Promise<void> =>
             message: `Vaš čas zakazan za ${formattedDate} je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`,
             type: 'WARNING'
           }));
-          await Notification.insertMany(notifications);
+          await createAndSendNotification(notifications);
         } catch (err) {
           console.error('Notification error:', err);
         }
@@ -606,7 +606,7 @@ export const updateClass = async (req: Request, res: Response): Promise<void> =>
           }));
           
         if (notifications.length > 0) {
-          await Notification.insertMany(notifications);
+          await createAndSendNotification(notifications);
         }
       } catch (err) {
         console.error('Greška pri slanju notifikacije za meet link:', err);
@@ -706,7 +706,7 @@ export const scheduleMakeupClass = async (req: Request, res: Response): Promise<
       message: `Zakazan vam je čas za NADOKNADU dana ${sDate.getDate().toString().padStart(2, '0')}.${(sDate.getMonth() + 1).toString().padStart(2, '0')}. u ${startTime}h. (${courseName} nivo)`,
       type: 'INFO'
     }));
-    await Notification.insertMany(notifications);
+    await createAndSendNotification(notifications);
 
     res.status(201).json(newClass);
   } catch (error) {
@@ -816,11 +816,22 @@ export const scheduleTrialClass = async (req: Request, res: Response): Promise<v
       status: 'ZAKAZAN'
     });
 
-    // Notifikacija profesoru (in-app)
-    await Notification.create({
+    const d = new Date(sDate);
+    const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}. u ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}h`;
+
+    // Notifikacija profesoru (in-app + push)
+    await createAndSendNotification({
       userId: profesorId,
       title: 'Novi Probni Čas! 🌟',
       message: `Učenik ${req.user?.firstName} ${req.user?.lastName} je zakazao besplatan probni čas kod Vas. Nivo: ${courseName}.`,
+      type: 'INFO'
+    });
+
+    // Notifikacija korisniku (in-app + push)
+    await createAndSendNotification({
+      userId: studentId,
+      title: 'Probni Čas Zakazan',
+      message: `Vaš probni čas (${courseName} nivo) je uspešno zakazan za ${formattedDate}.`,
       type: 'INFO'
     });
 

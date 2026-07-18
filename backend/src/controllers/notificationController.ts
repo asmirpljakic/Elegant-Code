@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Notification } from '../models/Notification';
 import { User } from '../models/User';
 import { getIO } from '../socket';
+import { createAndSendNotification } from '../services/notificationService';
 
 // @desc    Dohvati sve notifikacije za ulogovanog korisnika
 // @route   GET /api/notifications
@@ -98,7 +99,7 @@ export const broadcastNotification = async (req: Request, res: Response): Promis
     }));
 
     if (notifications.length > 0) {
-      await Notification.insertMany(notifications);
+      await createAndSendNotification(notifications);
       
       // Obavesti klijente preko Socket.IO (emitujemo svima, a klijenti osvežavaju svoje stanje)
       try {
