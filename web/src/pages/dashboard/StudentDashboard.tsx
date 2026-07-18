@@ -85,12 +85,12 @@ export default function StudentDashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       
-      {/* 0. PROBNI CAS BANNER i REKLAMNI BANERI (Samo za korisnike bez paketa) */}
+      {/* REKLAMNI BANERI (Samo za korisnike bez paketa) */}
+      {user?.activePackage === 'NONE' && <ScrollingBanner />}
+
+      {/* PROBNI CAS BANNER */}
       {canScheduleTrial && (
-        <>
-          <ScrollingBanner />
-          
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-white/10 rounded-full blur-[80px] pointer-events-none"></div>
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -110,7 +110,6 @@ export default function StudentDashboard() {
             </button>
           </div>
         </div>
-        </>
       )}
       {/* 1. SEKCIJA NAPRETKA (XP & Level) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-10 relative overflow-hidden">
