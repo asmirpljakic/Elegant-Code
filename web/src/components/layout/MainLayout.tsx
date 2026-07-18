@@ -16,7 +16,8 @@ import {
   CalendarClock,
   Megaphone,
   Menu,
-  X
+  X,
+  BellRing
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { NotificationDropdown } from '../ui/NotificationDropdown';
@@ -76,6 +77,12 @@ export default function MainLayout() {
       name: 'Baneri', 
       path: '/dashboard/banners', 
       icon: Megaphone,
+      hidden: !['SUPER_ADMIN', 'ADMIN'].includes(user?.role || '') 
+    },
+    { 
+      name: 'Obaveštenja', 
+      path: '/dashboard/system-notifications', 
+      icon: BellRing,
       hidden: !['SUPER_ADMIN', 'ADMIN'].includes(user?.role || '') 
     },
     { 

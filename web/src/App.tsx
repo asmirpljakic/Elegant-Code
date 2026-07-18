@@ -13,6 +13,7 @@ import Settings from './pages/dashboard/Settings';
 import Certificates from './pages/dashboard/Certificates';
 import GoogleMeet from './pages/dashboard/GoogleMeet';
 import MakeupSchedule from './pages/dashboard/MakeupSchedule';
+import SystemNotifications from './pages/dashboard/SystemNotifications';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getSocket } from './lib/socket';
@@ -123,6 +124,11 @@ function App() {
           <Route path="banners" element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
               <Banners />
+            </ProtectedRoute>
+          } />
+          <Route path="system-notifications" element={
+            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+              <SystemNotifications />
             </ProtectedRoute>
           } />
           <Route 
