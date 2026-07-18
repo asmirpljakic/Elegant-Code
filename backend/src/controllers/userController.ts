@@ -119,7 +119,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const { firstName, lastName, email, password, phoneNumber, role, activePackage } = validation.data;
+    const { firstName, lastName, email, password, phoneNumber, role, activePackage, attendanceMode } = validation.data;
     const currentUser = req.user;
 
     // --- BEZBEDNOSNE PROVERE ---
@@ -169,6 +169,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       // Ako profesor nije prosledio role, po default-u je UCENIK (definisano u shemi)
       role: role || 'UCENIK',
       activePackage: activePackage || 'NONE',
+      attendanceMode: attendanceMode || 'ONLINE',
       createdBy: currentUser?._id
     });
 
@@ -194,6 +195,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       phoneNumber: user.phoneNumber,
       role: user.role,
       activePackage: user.activePackage,
+      attendanceMode: user.attendanceMode,
       createdAt: (user as any).createdAt
     });
 
@@ -282,6 +284,10 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     // Ako prosleđujemo novu ulogu (i imamo prava za to)
     if (validation.data.role) {
       userToEdit.role = validation.data.role;
+    }
+
+    if (validation.data.attendanceMode) {
+      userToEdit.attendanceMode = validation.data.attendanceMode;
     }
     
     // Ako prosleđujemo novi paket (i imamo prava za to)
