@@ -118,7 +118,7 @@ export default function MakeupSchedule() {
       </div>
 
       <FreeSlotsCalendar 
-        scheduleList={busySlots} 
+        scheduleList={schedule} 
         profesorId={filterUserId}
         unavailableDates={unavailableDates}
         onSlotClick={handleSlotSelected}

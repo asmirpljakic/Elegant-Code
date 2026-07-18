@@ -150,7 +150,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['ClassSession', 'User', 'Users'],
     }),
-    getProfessorBusySlots: builder.query<any[], string>({
+    getProfessorBusySlots: builder.query<any, string>({
       query: (profesorId) => `/schedule/public/${profesorId}`,
     }),
     scheduleTrialClass: builder.mutation<void, any>({

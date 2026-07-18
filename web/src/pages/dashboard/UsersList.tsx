@@ -270,9 +270,9 @@ export default function UsersList() {
                             {user.firstName} {user.lastName}
                             {['UCENIK', 'KLIJENT'].includes(user.role) && (
                               user.attendanceMode === 'UZIVO' ? (
-                                <Building className="w-4 h-4 text-amber-500" title="Nastava uživo" />
+                                <span title="Nastava uživo"><Building className="w-4 h-4 text-amber-500" /></span>
                               ) : (
-                                <Monitor className="w-4 h-4 text-blue-400" title="Online nastava" />
+                                <span title="Online nastava"><Monitor className="w-4 h-4 text-blue-400" /></span>
                               )
                             )}
                           </div>
