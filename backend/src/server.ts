@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
 
 // Učitavanje varijabli okruženja mora biti PRE ostalih import-a jer Node hoistuje importe
 dotenv.config();
@@ -20,7 +23,32 @@ import { initSocket } from './socket';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Security Middleware (Enterprise nivo)
+// 1. HTTP zaglavlja za zaštitu od uobičajenih ranjivosti
+app.use(helmet());
+
+// 2. Rate Limiting za sprečavanje DDoS i Brute Force napada
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuta
+  max: 1000, // Dozvoljeno 1000 zahteva po IP adresi u 15 minuta (skalabilan limit)
+  message: { error: 'Previše zahteva sa ove IP adrese. Molimo sačekajte 15 minuta.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', apiLimiter);
+
+// Specifičan, strožiji Rate Limit za autentifikaciju
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50, // 50 pokušaja prijave po IP adresi u 15 minuta
+  message: { error: 'Previše pokušaja prijave. Molimo sačekajte 15 minuta.' },
+});
+app.use('/api/auth', authLimiter);
+
+// 3. Sanitizacija ulaznih podataka (sprečavanje NoSQL Injection napada)
+app.use(mongoSanitize());
+
+// Standardni middleware
 app.use(cors());
 app.use(express.json());
 

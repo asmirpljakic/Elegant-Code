@@ -23,13 +23,23 @@ export const getSchedule = async (req: Request, res: Response): Promise<void> =>
 
     // Učenik vidi samo časove gde je on dodat u niz students
     if (user.role === 'UCENIK') {
-      query = { 'students.studentId': user._id };
+      query['students.studentId'] = user._id;
     } 
     // Profesor vidi samo časove koje on drži
     else if (user.role === 'PROFESOR') {
-      query = { profesorId: user._id };
+      query.profesorId = user._id;
     }
-    // Admin i SuperAdmin vide sve časove (query ostaje prazan)
+    // Admin i SuperAdmin vide sve časove
+
+    // Enterprise Optimizacija: Ograničavamo upit na poslednjih mesec dana i budućnost
+    // Da sprečimo pucanje servera kada korisnik bude imao hiljade časova u istoriji
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    
+    // Ako klijent izričito traži svu istoriju (npr. za posebne izveštaje), dozvolićemo to preko query parametra
+    if (req.query.all !== 'true') {
+      query.startTime = { $gte: oneMonthAgo };
+    }
 
     const classes = await ClassSession.find(query)
       .populate('profesorId', 'firstName lastName')

@@ -36,7 +36,17 @@ const ClassSessionSchema: Schema = new Schema({
   isMakeup: { type: Boolean, default: false }
 }, { timestamps: true });
 
-// Indeks za brze pretrage termina (npr. Cron job za obaveštavanje 1h pred čas)
+// Enterprise Optimizacija: Indeksi za ekstremno brze pretrage
+// 1. Ubrzava rute gde profesor traži svoje časove sortirane po vremenu
+ClassSessionSchema.index({ profesorId: 1, startTime: -1 });
+
+// 2. Ubrzava rute gde učenik traži svoje časove (compound index unutar niza)
+ClassSessionSchema.index({ 'students.studentId': 1, startTime: -1 });
+
+// 3. Ubrzava rute koje filtriraju po statusu (npr. ZAKAZAN) i vremenu
+ClassSessionSchema.index({ status: 1, startTime: 1 });
+
+// Originalni index za Cron job
 ClassSessionSchema.index({ startTime: 1 });
 
 export const ClassSession = mongoose.model<IClassSession>('ClassSession', ClassSessionSchema);
