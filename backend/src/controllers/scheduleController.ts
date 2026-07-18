@@ -595,24 +595,22 @@ export const updateClass = async (req: Request, res: Response): Promise<void> =>
 
     // Provera za Notifikaciju o dodavanju Google Meet linka
     if (meetingLink && meetingLink.trim() !== '' && meetingLink !== classSession.meetingLink) {
-      setTimeout(async () => {
-        try {
-          const notifications = classSession.students
-            .filter((st: any) => st.studentId && st.studentId.attendanceMode !== 'UZIVO')
-            .map((st: any) => ({
-              userId: st.studentId._id,
-              title: 'Spreman Link za Čas 📹',
-              message: `Profesor je upravo dodao Google Meet link. Tvoj čas (${classSession.courseName} nivo) uskoro počinje!`,
-              type: 'INFO'
-            }));
-            
-          if (notifications.length > 0) {
-            await Notification.insertMany(notifications);
-          }
-        } catch (err) {
-          console.error('Greška pri slanju notifikacije za meet link:', err);
+      try {
+        const notifications = classSession.students
+          .filter((st: any) => st.studentId && st.studentId.attendanceMode !== 'UZIVO')
+          .map((st: any) => ({
+            userId: st.studentId._id,
+            title: 'Spreman Link za Čas 📹',
+            message: `Profesor je upravo dodao Google Meet link. Tvoj čas (${classSession.courseName} nivo) uskoro počinje!`,
+            type: 'INFO'
+          }));
+          
+        if (notifications.length > 0) {
+          await Notification.insertMany(notifications);
         }
-      }, 0);
+      } catch (err) {
+        console.error('Greška pri slanju notifikacije za meet link:', err);
+      }
     }
   } catch (error) {
     res.status(500).json({ error: 'Greška pri izmeni časa' });
