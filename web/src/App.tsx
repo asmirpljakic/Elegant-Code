@@ -7,7 +7,6 @@ import MainLayout from './components/layout/MainLayout';
 import DashboardIndex from './pages/dashboard/DashboardIndex';
 import UsersList from './pages/dashboard/UsersList';
 import Schedule from './pages/dashboard/Schedule';
-import PaymentSuccess from './pages/dashboard/PaymentSuccess';
 import Banners from './pages/dashboard/Banners';
 import Analytics from './pages/dashboard/Analytics';
 import Settings from './pages/dashboard/Settings';
