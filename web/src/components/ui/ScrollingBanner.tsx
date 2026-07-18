@@ -12,13 +12,13 @@ export function ScrollingBanner() {
   if (activeBanners.length === 0) return null;
 
   return (
-    <div className="w-full bg-gradient-to-r from-sky-500 via-blue-400 to-sky-500 text-white shadow-md overflow-hidden relative rounded-xl mb-6 border border-sky-300/20 flex items-stretch">
+    <div className="w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 text-white shadow-md overflow-hidden relative rounded-xl mb-6 border border-emerald-400/20 flex items-stretch">
       <div className="absolute inset-0 bg-white/5" />
       
       {/* Fiksni deo sa ikonicom - tanji padding */}
-      <div className="px-4 py-2.5 bg-slate-900/90 backdrop-blur-sm z-10 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.4)] relative border-r border-sky-400/20">
-        <Megaphone className="w-4 h-4 animate-pulse text-sky-300" />
-        <span className="bg-gradient-to-r from-white to-sky-100 bg-clip-text text-transparent">Najnovije</span>
+      <div className="px-4 py-2.5 bg-slate-900/90 backdrop-blur-sm z-10 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.4)] relative border-r border-emerald-400/20">
+        <Megaphone className="w-4 h-4 animate-pulse text-emerald-400" />
+        <span className="bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">Najnovije</span>
       </div>
       
       {/* Animacija Marquee - kreće odmah i vrti se beskonačno */}
