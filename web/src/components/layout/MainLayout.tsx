@@ -14,6 +14,7 @@ import {
   Award, 
   Video, 
   CalendarClock,
+  Megaphone,
   Menu,
   X
 } from 'lucide-react';
@@ -69,6 +70,12 @@ export default function MainLayout() {
       name: 'Statistika',  
       path: '/dashboard/analytics', 
       icon: BarChart,
+      hidden: !['SUPER_ADMIN', 'ADMIN'].includes(user?.role || '') 
+    },
+    { 
+      name: 'Baneri', 
+      path: '/dashboard/banners', 
+      icon: Megaphone,
       hidden: !['SUPER_ADMIN', 'ADMIN'].includes(user?.role || '') 
     },
     { 

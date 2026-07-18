@@ -34,7 +34,7 @@ export const getSettings = async (req: Request, res: Response): Promise<void> =>
 // @access  Private/Admin, SuperAdmin
 export const updateSettings = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { professorClassFee, packagePrices } = req.body;
+    const { professorClassFee, packagePrices, banners } = req.body;
     
     // Provera permisija se radi u middleware-u, ali duplo je bezbednije
     if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
@@ -52,6 +52,10 @@ export const updateSettings = async (req: Request, res: Response): Promise<void>
       if (packagePrices.OSNOVNI !== undefined) settings.packagePrices.OSNOVNI = packagePrices.OSNOVNI;
       if (packagePrices.SREDNJI !== undefined) settings.packagePrices.SREDNJI = packagePrices.SREDNJI;
       if (packagePrices.NAPREDNI !== undefined) settings.packagePrices.NAPREDNI = packagePrices.NAPREDNI;
+    }
+    
+    if (banners !== undefined) {
+      settings.banners = banners;
     }
     
     await settings.save();

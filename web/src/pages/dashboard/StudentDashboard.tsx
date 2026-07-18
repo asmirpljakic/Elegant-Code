@@ -6,6 +6,7 @@ import { Loader2, Award, Zap, Shield, Video, Calendar, Clock, Star, Trophy, Targ
 import { format, isAfter, isBefore } from 'date-fns';
 import { srLatn } from 'date-fns/locale';
 import { cn } from '../../lib/utils';
+import { ScrollingBanner } from '../../components/ui/ScrollingBanner';
 import TrialClassModal from './TrialClassModal';
 
 export default function StudentDashboard() {
@@ -84,9 +85,12 @@ export default function StudentDashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       
-      {/* 0. PROBNI CAS BANNER */}
+      {/* 0. PROBNI CAS BANNER i REKLAMNI BANERI (Samo za korisnike bez paketa) */}
       {canScheduleTrial && (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
+        <>
+          <ScrollingBanner />
+          
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-500/20 border border-blue-400/30">
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-white/10 rounded-full blur-[80px] pointer-events-none"></div>
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
