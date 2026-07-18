@@ -54,7 +54,7 @@ function App() {
 
     socket.on('users_updated', () => {
       console.log('Primljen users_updated signal, osvežavam podatke...');
-      dispatch(apiSlice.util.invalidateTags(['Users', 'ClassSession']));
+      dispatch(apiSlice.util.invalidateTags(['Users', 'ClassSession', 'User']));
     });
 
     socket.on('new_notification', () => {

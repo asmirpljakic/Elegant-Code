@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { useGetAnalyticsQuery, useGetScheduleQuery } from '../../store/apiSlice';
+import { useGetAnalyticsQuery, useGetScheduleQuery, useGetMeQuery } from '../../store/apiSlice';
 import type { RootState } from '../../store/store';
 import StudentStats from "./StudentStats";
 import ProfessorDashboard from "./ProfessorDashboard";
@@ -15,6 +15,12 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 export default function DashboardIndex() {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
+  
+  const { data: freshUser } = useGetMeQuery(undefined, {
+    skip: !user,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true
+  });
   
   const { data: analyticsData, isLoading: analyticsLoading } = useGetAnalyticsQuery(undefined, {
     skip: user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN',
@@ -205,7 +211,7 @@ export default function DashboardIndex() {
     return (
       <div className="max-w-7xl mx-auto space-y-8">
         {/* REKLAMNI BANERI (Samo za korisnike bez paketa) */}
-        {user?.activePackage === 'NONE' && <ScrollingBanner />}
+        {freshUser?.activePackage === 'NONE' && <ScrollingBanner />}
 
         {/* PROBNI CAS BANNER */}
         {canScheduleTrial && (
