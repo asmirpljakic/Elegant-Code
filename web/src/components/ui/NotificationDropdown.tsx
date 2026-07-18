@@ -30,6 +30,12 @@ export function NotificationDropdown() {
 
   const unreadCount = notifications.filter((n: any) => !n.isRead).length;
 
+  const prevUnreadCountRef = useRef(unreadCount);
+
+  useEffect(() => {
+    prevUnreadCountRef.current = unreadCount;
+  }, [unreadCount]);
+
   // Zatvaranje na klik izvan dropdowna
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

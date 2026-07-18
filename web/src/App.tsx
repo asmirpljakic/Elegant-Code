@@ -41,29 +41,35 @@ function App() {
   useEffect(() => {
     const socket = getSocket();
 
-    // Zvučni efekat za novu notifikaciju
+
+
+    // Globalni zvučni efekat za novu notifikaciju (Meet Raise Hand)
     const playNotificationSound = () => {
       try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         if (!AudioContext) return;
         const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-
-        // Prijatan, nenametljiv dupli "ping" zvuk
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1); // A5
         
-        gainNode.gain.setValueAtTime(0, ctx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        const playBloop = (freq: number, startTime: number, duration: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          
+          osc.frequency.setValueAtTime(freq, startTime);
+          
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.6, startTime + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + duration + 0.1);
+        };
 
-        osc.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
+        playBloop(523.25, ctx.currentTime, 0.1); // C5
+        playBloop(659.25, ctx.currentTime + 0.08, 0.1); // E5
+        playBloop(783.99, ctx.currentTime + 0.16, 0.2); // G5
       } catch (err) {
         console.log("Audio autoplay blocked or not supported", err);
       }
