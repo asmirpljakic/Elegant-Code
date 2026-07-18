@@ -51,7 +51,7 @@ NotificationSchema.post('save', async function (doc) {
     if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
       const payload = {
         title: 'Elegant Code',
-        body: `${doc.title}\n\n${doc.message}`,
+        body: doc.message,
         url: '/' // Gde vodi klik
       };
 
@@ -77,7 +77,7 @@ NotificationSchema.post('insertMany', async function (docs: any) {
       if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
         const payload = {
           title: 'Elegant Code',
-          body: `${doc.title}\n\n${doc.message}`,
+          body: doc.message,
           url: '/'
         };
         for (const sub of user.pushSubscriptions) {
