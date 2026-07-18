@@ -50,8 +50,8 @@ NotificationSchema.post('save', async function (doc) {
     const user = await User.findById(doc.userId);
     if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
       const payload = {
-        title: doc.title,
-        body: doc.message,
+        title: 'Elegant Code',
+        body: `${doc.title}\n\n${doc.message}`,
         url: '/' // Gde vodi klik
       };
 
@@ -76,8 +76,8 @@ NotificationSchema.post('insertMany', async function (docs: any) {
       const user = await User.findById(doc.userId);
       if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
         const payload = {
-          title: doc.title,
-          body: doc.message,
+          title: 'Elegant Code',
+          body: `${doc.title}\n\n${doc.message}`,
           url: '/'
         };
         for (const sub of user.pushSubscriptions) {
