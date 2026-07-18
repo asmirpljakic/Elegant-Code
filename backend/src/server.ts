@@ -37,9 +37,9 @@ app.use(helmet());
 
 // 2. Rate Limiting za sprečavanje DDoS i Brute Force napada
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minuta
-  max: 1000, // Dozvoljeno 1000 zahteva po IP adresi u 15 minuta (skalabilan limit)
-  message: { error: 'Previše zahteva sa ove IP adrese. Molimo sačekajte 15 minuta.' },
+  windowMs: 5 * 60 * 1000, // 5 minuta (Smanjeno radi lakšeg testiranja i brzog reseta)
+  max: 5000, // Dozvoljeno 5000 zahteva po IP adresi u 5 minuta (značajno relaksirano zbog polling-a)
+  message: { error: 'Previše zahteva sa ove IP adrese. Molimo sačekajte 5 minuta.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -47,9 +47,9 @@ app.use('/api', apiLimiter);
 
 // Specifičan, strožiji Rate Limit za autentifikaciju
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50, // 50 pokušaja prijave po IP adresi u 15 minuta
-  message: { error: 'Previše pokušaja prijave. Molimo sačekajte 15 minuta.' },
+  windowMs: 5 * 60 * 1000, // 5 minuta
+  max: 100, // 100 pokušaja prijave po IP adresi u 5 minuta
+  message: { error: 'Previše pokušaja prijave. Molimo sačekajte 5 minuta.' },
 });
 app.use('/api/auth', authLimiter);
 
