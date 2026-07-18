@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGetSettingsQuery } from '../../store/apiSlice';
-import { Zap } from 'lucide-react';
+import { Megaphone } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export function ScrollingBanner() {
@@ -17,8 +17,8 @@ export function ScrollingBanner() {
       <div className="flex items-center">
         {/* Fiksni deo sa ikonicom */}
         <div className="px-4 py-3 bg-indigo-900/80 backdrop-blur-sm z-10 flex items-center gap-2 font-bold uppercase tracking-wider text-sm whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.2)] relative border-r border-indigo-400/20">
-          <Zap className="w-4 h-4 animate-pulse text-yellow-300" fill="currentColor" />
-          <span className="bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent">Aktuelno</span>
+          <Megaphone className="w-4 h-4 animate-pulse text-yellow-300" />
+          <span className="bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent">Najnovije</span>
         </div>
         
         {/* Animacija Marquee */}
@@ -88,7 +88,7 @@ export function ScrollingBanner() {
           100% { transform: translateX(-50%); } /* S obzirom da smo duplirali 3 puta, idemo do -50% za savršen loop */
         }
         .animate-marquee {
-          animation: marquee 25s linear infinite;
+          animation: marquee 15s linear infinite;
         }
         .animate-marquee:hover {
           animation-play-state: paused;
