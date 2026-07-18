@@ -109,7 +109,6 @@ export default function StudentDashboard() {
               Zakaži Besplatan Čas
             </button>
           </div>
-          </div>
         </div>
         </>
       )}
