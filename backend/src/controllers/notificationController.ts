@@ -165,3 +165,28 @@ export const subscribeToPush = async (req: Request, res: Response): Promise<void
     res.status(500).json({ error: 'Greška pri čuvanju pretplate na serveru.' });
   }
 };
+
+export const testCancelClassPush = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(401).json({ error: 'Niste ulogovani' });
+      return;
+    }
+
+    const d = new Date();
+    const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}. u ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}h`;
+    let messageText = `Vaš čas zakazan za ${formattedDate} je otkazan. Bez brige, nadoknadićemo ga u predstojećim danima! Profesor će uskoro zakazati nadoknadu, o čemu ćete biti obavešteni novom notifikacijom.`;
+
+    await createAndSendNotification({
+      userId: userId,
+      title: 'Čas je Otkazan ❌',
+      message: messageText,
+      type: 'WARNING'
+    });
+
+    res.json({ message: 'Poslato test cancel obaveštenje direktno vama!' });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+};

@@ -98,13 +98,31 @@ export default function SystemNotifications() {
           </div>
           <div className="flex justify-end pt-4">
             <Button 
-              type="button" 
-              onClick={handleSend}
+              onClick={handleSend} 
+              className="w-full sm:w-auto"
               isLoading={isBroadcasting} 
-              className="px-8 py-3.5 flex items-center bg-amber-500 hover:bg-amber-600 text-white text-lg shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
+              disabled={isBroadcasting || !broadcastTitle || !broadcastMessage}
             >
-              <Send className="w-5 h-5 mr-2" />
-              Pošalji Obaveštenje
+              Pošalji obaveštenje
+            </Button>
+            <Button
+              type="button"
+              className="w-full sm:w-auto mt-2 sm:mt-0 ml-0 sm:ml-4 bg-orange-600 hover:bg-orange-700"
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem('token');
+                  const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/notifications/test-cancel-push`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                  });
+                  const data = await res.json();
+                  alert(data.message || data.error);
+                } catch (e) {
+                  alert('Greska pri testiranju');
+                }
+              }}
+            >
+              Testiraj "Cancel Class" Push
             </Button>
           </div>
         </div>
