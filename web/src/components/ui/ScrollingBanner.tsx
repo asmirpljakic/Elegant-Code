@@ -12,13 +12,13 @@ export function ScrollingBanner() {
   if (activeBanners.length === 0) return null;
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg overflow-hidden relative rounded-2xl mb-6 border border-indigo-400/20 flex items-stretch">
+    <div className="w-full bg-gradient-to-r from-rose-600 via-orange-500 to-rose-600 text-white shadow-lg overflow-hidden relative rounded-2xl mb-6 border border-rose-400/20 flex items-stretch">
       <div className="absolute inset-0 bg-white/5" />
       
       {/* Fiksni deo sa ikonicom - sada popunjava celu visinu i prati border radius */}
-      <div className="px-6 py-4 bg-indigo-950/90 backdrop-blur-sm z-10 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.4)] relative border-r border-indigo-400/20">
+      <div className="px-6 py-4 bg-rose-950/90 backdrop-blur-sm z-10 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.4)] relative border-r border-rose-400/20">
         <Megaphone className="w-5 h-5 animate-pulse text-yellow-300" />
-        <span className="bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent">Najnovije</span>
+        <span className="bg-gradient-to-r from-white to-rose-100 bg-clip-text text-transparent">Najnovije</span>
       </div>
       
       {/* Animacija Marquee - kreće od desne ivice i ide do leve */}
@@ -50,7 +50,7 @@ export function ScrollingBanner() {
           100% { transform: translateX(-100%); } /* Završava skroz van ekrana sa leve strane (iza Najnovije) */
         }
         .animate-marquee {
-          animation: marquee 20s linear infinite;
+          animation: marquee 35s linear infinite;
           padding-left: 20px; /* Mali padding pre početka teksta */
         }
         .animate-marquee:hover {
