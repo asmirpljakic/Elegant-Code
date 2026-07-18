@@ -25,7 +25,8 @@ export const getAnalytics = async (req: Request, res: Response): Promise<void> =
     // Najlojalniji učenik (najviše održanih časova iz User progress-a)
     const topStudentDoc = await User.findOne({ role: { $in: ['UCENIK', 'KLIJENT'] } })
       .sort({ 'progress.totalClassesAttended': -1 })
-      .select('firstName lastName progress.totalClassesAttended');
+      .select('firstName lastName progress.totalClassesAttended')
+      .lean();
     
     const topStudent = topStudentDoc ? {
       name: `${topStudentDoc.firstName} ${topStudentDoc.lastName}`,
@@ -158,7 +159,8 @@ export const getAnalytics = async (req: Request, res: Response): Promise<void> =
     const activities = await ActivityLog.find()
       .sort({ createdAt: -1 })
       .limit(10)
-      .select('action description createdAt');
+      .select('action description createdAt')
+      .lean();
 
     res.json({
       kpis: {

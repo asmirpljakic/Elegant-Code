@@ -98,7 +98,7 @@ export default function Settings() {
             >
               <span className="sr-only">Uključi mod održavanja</span>
               <span
-                className={`pointer-events-none inline-block h-9 w-9 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center ${maintenanceMode ? 'translate-x-10' : 'translate-x-0'}`}
+                className={`pointer-events-none flex h-9 w-9 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out items-center justify-center ${maintenanceMode ? 'translate-x-10' : 'translate-x-0'}`}
               >
                 <Power className={`w-4 h-4 ${maintenanceMode ? 'text-amber-500' : 'text-slate-400'}`} />
               </span>

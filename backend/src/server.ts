@@ -19,6 +19,7 @@ import certificateRoutes from './routes/certificateRoutes';
 import { connectDB } from './config/db';
 import { startCronJobs } from './jobs/cronJobs';
 import { initSocket } from './socket';
+import { errorHandler } from './middleware/errorMiddleware';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -80,6 +81,9 @@ app.get('/', (req, res) => {
   // Trigerujemo nodemon
   res.send('Elegant Code API radi!');
 });
+
+// Enterprise Error Handler - Mora biti definisan posle svih ruta
+app.use(errorHandler);
 
 // Startovanje cron jobova
 startCronJobs();

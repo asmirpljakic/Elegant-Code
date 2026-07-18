@@ -87,7 +87,8 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
       .select('-password')
       .sort({ createdAt: -1 })
       .skip(startIndex)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     res.json({
       users,
@@ -453,7 +454,8 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
 export const getPublicProfessors = async (req: Request, res: Response): Promise<void> => {
   try {
     const professors = await User.find({ role: 'PROFESOR', isActive: true })
-      .select('_id firstName lastName email');
+      .select('_id firstName lastName email')
+      .lean();
     
     res.json(professors);
   } catch (error) {

@@ -59,7 +59,10 @@ const UserSchema: Schema = new Schema({
 // Indeks za brzu proveru isteklih članarina za učenike
 UserSchema.index({ membershipExpiresAt: 1, role: 1 });
 
-// Enterprise Optimizacija: Indeks za pronalaženje korisnika po ulozi (profesori, učenici)
+// Indeksi za performanse baze
+UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
+UserSchema.index({ isActive: 1 });
+UserSchema.index({ role: 1, isActive: 1 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

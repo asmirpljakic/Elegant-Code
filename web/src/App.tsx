@@ -1,25 +1,34 @@
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyOTP from './pages/auth/VerifyOTP';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
-import DashboardIndex from './pages/dashboard/DashboardIndex';
-import UsersList from './pages/dashboard/UsersList';
-import Schedule from './pages/dashboard/Schedule';
-import Banners from './pages/dashboard/Banners';
-import Analytics from './pages/dashboard/Analytics';
-import Settings from './pages/dashboard/Settings';
-import Certificates from './pages/dashboard/Certificates';
-import GoogleMeet from './pages/dashboard/GoogleMeet';
-import MakeupSchedule from './pages/dashboard/MakeupSchedule';
-import SystemNotifications from './pages/dashboard/SystemNotifications';
 import MaintenancePage from './pages/MaintenancePage';
-import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSocket } from './lib/socket';
 import { apiSlice, useGetPublicSettingsQuery } from './store/apiSlice';
 import type { RootState } from './store/store';
+
+// Enterprise Code Splitting (Lazy Loading) za Dashboard komponente
+const DashboardIndex = React.lazy(() => import('./pages/dashboard/DashboardIndex'));
+const UsersList = React.lazy(() => import('./pages/dashboard/UsersList'));
+const Schedule = React.lazy(() => import('./pages/dashboard/Schedule'));
+const Banners = React.lazy(() => import('./pages/dashboard/Banners'));
+const Analytics = React.lazy(() => import('./pages/dashboard/Analytics'));
+const Settings = React.lazy(() => import('./pages/dashboard/Settings'));
+const Certificates = React.lazy(() => import('./pages/dashboard/Certificates'));
+const GoogleMeet = React.lazy(() => import('./pages/dashboard/GoogleMeet'));
+const MakeupSchedule = React.lazy(() => import('./pages/dashboard/MakeupSchedule'));
+const SystemNotifications = React.lazy(() => import('./pages/dashboard/SystemNotifications'));
+
+// Custom Loading Fallback Component
+const PageLoader = () => (
+  <div className="flex-1 flex items-center justify-center p-12 min-h-[50vh]">
+    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -111,7 +120,9 @@ function App() {
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                <MainLayout />
+                <Suspense fallback={<PageLoader />}>
+                  <MainLayout />
+                </Suspense>
               </ProtectedRoute>
             }
           >
