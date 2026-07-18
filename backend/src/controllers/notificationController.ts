@@ -15,7 +15,7 @@ export const getNotifications = async (req: Request, res: Response): Promise<voi
     }
 
     const limit = parseInt(req.query.limit as string) || 5;
-    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 }).limit(limit);
+    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 }).limit(limit).lean();
     const total = await Notification.countDocuments({ userId });
     
     res.json({ notifications, total });

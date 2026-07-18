@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
+import compression from 'compression';
 
 // Učitavanje varijabli okruženja mora biti PRE ostalih import-a jer Node hoistuje importe
 dotenv.config();
@@ -32,14 +33,17 @@ app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
 
+// Enterprise GZIP kompresija (drastično smanjuje veličinu JSON payload-a za brz odziv)
+app.use(compression());
+
 // Security Middleware (Enterprise nivo)
 // 1. HTTP zaglavlja za zaštitu od uobičajenih ranjivosti
 app.use(helmet());
 
 // 2. Rate Limiting za sprečavanje DDoS i Brute Force napada
 const apiLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minuta (Smanjeno radi lakšeg testiranja i brzog reseta)
-  max: 5000, // Dozvoljeno 5000 zahteva po IP adresi u 5 minuta (značajno relaksirano zbog polling-a)
+  windowMs: 5 * 60 * 1000, // 5 minuta
+  max: 500, // Dozvoljeno 500 zahteva po IP adresi u 5 minuta (Ovo je Enterprise standard sada kad nema polling-a)
   message: { error: 'Previše zahteva sa ove IP adrese. Molimo sačekajte 5 minuta.' },
   standardHeaders: true,
   legacyHeaders: false,
