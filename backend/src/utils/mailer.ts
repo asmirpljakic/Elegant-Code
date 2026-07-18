@@ -30,10 +30,10 @@ const createRawEmail = (to: string, otp: string) => {
         </p>
         
         <div style="background-color: #f1f5f9; border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 8px; margin: 25px 0;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-otp?email=${encodeURIComponent(to)}&code=${otp}" target="_blank" style="font-size: 36px; font-weight: bold; font-family: monospace; color: #3b82f6; user-select: all; text-decoration: none; padding: 10px; background: #e2e8f0; border-radius: 6px; display: inline-block;">
+          <div style="font-size: 36px; font-weight: bold; font-family: monospace; color: #3b82f6; user-select: all; cursor: pointer; padding: 10px; background: #e2e8f0; border-radius: 6px; display: inline-block;">
             ${otp}
-          </a>
-          <p style="font-size: 12px; color: #64748b; margin-top: 10px; font-family: Arial, sans-serif;">(Klikni na kod iznad za automatsku verifikaciju, ili ga kopiraj ručno)</p>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin-top: 10px; font-family: Arial, sans-serif;">(Zadrži klik ili dvaput klikni da označiš kod, zatim kopiraj)</p>
         </div>
         
         <p style="color: #64748b; font-size: 13px; text-align: center; margin-bottom: 0;">
