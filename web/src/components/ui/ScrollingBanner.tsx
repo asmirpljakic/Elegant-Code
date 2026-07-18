@@ -12,83 +12,46 @@ export function ScrollingBanner() {
   if (activeBanners.length === 0) return null;
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg overflow-hidden relative rounded-2xl mb-6 border border-indigo-400/20">
+    <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg overflow-hidden relative rounded-2xl mb-6 border border-indigo-400/20 flex items-stretch">
       <div className="absolute inset-0 bg-white/5" />
-      <div className="flex items-center">
-        {/* Fiksni deo sa ikonicom */}
-        <div className="px-4 py-3 bg-indigo-900/80 backdrop-blur-sm z-10 flex items-center gap-2 font-bold uppercase tracking-wider text-sm whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.2)] relative border-r border-indigo-400/20">
-          <Megaphone className="w-4 h-4 animate-pulse text-yellow-300" />
-          <span className="bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent">Najnovije</span>
-        </div>
-        
-        {/* Animacija Marquee */}
-        <div className="flex-1 overflow-hidden relative">
-          <div className="animate-marquee flex whitespace-nowrap py-3">
-            {/* Prvi set banera */}
-            {activeBanners.map((banner: any, index: number) => (
-              <React.Fragment key={index}>
-                {banner.link ? (
-                  <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
-                    {banner.text}
-                  </a>
-                ) : (
-                  <span className="mx-8 font-medium">
-                    {banner.text}
-                  </span>
-                )}
-                {/* Separator */}
-                {index < activeBanners.length - 1 && (
-                  <span className="opacity-50">♦</span>
-                )}
-              </React.Fragment>
-            ))}
-            
-            {/* Duplirani set banera radi beskonačnog skrola (ako ih ima više ili da bi ispunili širinu) */}
-            <span className="opacity-50 mx-8">♦</span>
-            {activeBanners.map((banner: any, index: number) => (
-              <React.Fragment key={`dup-${index}`}>
-                {banner.link ? (
-                  <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
-                    {banner.text}
-                  </a>
-                ) : (
-                  <span className="mx-8 font-medium">
-                    {banner.text}
-                  </span>
-                )}
-                {index < activeBanners.length - 1 && (
-                  <span className="opacity-50">♦</span>
-                )}
-              </React.Fragment>
-            ))}
-            <span className="opacity-50 mx-8">♦</span>
-            {activeBanners.map((banner: any, index: number) => (
-              <React.Fragment key={`dup2-${index}`}>
-                {banner.link ? (
-                  <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
-                    {banner.text}
-                  </a>
-                ) : (
-                  <span className="mx-8 font-medium">
-                    {banner.text}
-                  </span>
-                )}
-                {index < activeBanners.length - 1 && (
-                  <span className="opacity-50">♦</span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+      
+      {/* Fiksni deo sa ikonicom - sada popunjava celu visinu i prati border radius */}
+      <div className="px-6 py-4 bg-indigo-950/90 backdrop-blur-sm z-10 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.4)] relative border-r border-indigo-400/20">
+        <Megaphone className="w-5 h-5 animate-pulse text-yellow-300" />
+        <span className="bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent">Najnovije</span>
+      </div>
+      
+      {/* Animacija Marquee - kreće od desne ivice i ide do leve */}
+      <div className="flex-1 overflow-hidden relative flex items-center">
+        <div className="animate-marquee flex whitespace-nowrap py-4">
+          {activeBanners.map((banner: any, index: number) => (
+            <React.Fragment key={index}>
+              {banner.link ? (
+                <a href={banner.link} target="_blank" rel="noreferrer" className="mx-8 font-medium hover:text-yellow-200 hover:underline underline-offset-4 transition-colors">
+                  {banner.text}
+                </a>
+              ) : (
+                <span className="mx-8 font-medium text-lg">
+                  {banner.text}
+                </span>
+              )}
+              {/* Separator */}
+              {index < activeBanners.length - 1 && (
+                <span className="opacity-50">♦</span>
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); } /* S obzirom da smo duplirali 3 puta, idemo do -50% za savršen loop */
+          0% { transform: translateX(100vw); } /* Počinje skroz van ekrana sa desne strane */
+          100% { transform: translateX(-100%); } /* Završava skroz van ekrana sa leve strane (iza Najnovije) */
         }
         .animate-marquee {
-          animation: marquee 15s linear infinite;
+          animation: marquee 20s linear infinite;
+          padding-left: 20px; /* Mali padding pre početka teksta */
         }
         .animate-marquee:hover {
           animation-play-state: paused;
