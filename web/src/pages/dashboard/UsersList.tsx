@@ -130,6 +130,19 @@ export default function UsersList() {
     }
   };
 
+  const handleToggleAttendance = async (user: UserResponse) => {
+    try {
+      const newMode = user.attendanceMode === 'UZIVO' ? 'ONLINE' : 'UZIVO';
+      await updateUser({
+        id: user._id,
+        data: { attendanceMode: newMode }
+      }).unwrap();
+    } catch (err: any) {
+      console.error('Greška pri promeni načina nastave', err);
+      alert(err?.data?.error || 'Došlo je do greške pri promeni načina nastave.');
+    }
+  };
+
   const handleApproveCertificate = async () => {
     if (!selectedUser || !certCourseName.trim()) return;
     try {
@@ -343,6 +356,22 @@ export default function UsersList() {
                             title="Verifikuj nalog"
                           >
                             <CheckCircle className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Brza promena načina nastave (Samo za Učenike/Klijente) */}
+                        {(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN' || currentUser?.role === 'PROFESOR') && (user.role === 'UCENIK' || user.role === 'KLIJENT') && (
+                          <button 
+                            onClick={() => handleToggleAttendance(user)}
+                            className={`p-2 rounded-lg transition-colors inline-flex items-center ${
+                              user.attendanceMode === 'UZIVO' 
+                                ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' 
+                                : 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
+                            }`}
+                            title={user.attendanceMode === 'UZIVO' ? "Prebaci na ONLINE" : "Prebaci na UŽIVO"}
+                            disabled={isUpdating}
+                          >
+                            {user.attendanceMode === 'UZIVO' ? <Building className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
                           </button>
                         )}
                         
