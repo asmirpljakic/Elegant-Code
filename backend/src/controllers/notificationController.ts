@@ -117,3 +117,50 @@ export const broadcastNotification = async (req: Request, res: Response): Promis
     res.status(500).json({ error: 'Greška pri slanju globalnog obaveštenja.' });
   }
 };
+
+// @desc    Preuzmi VAPID javni ključ za frontend
+// @route   GET /api/notifications/vapid-key
+// @access  Public
+export const getVapidPublicKey = async (req: Request, res: Response): Promise<void> => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || '' });
+};
+
+// @desc    Pretplati korisnika na Web Push
+// @route   POST /api/notifications/subscribe
+// @access  Private
+export const subscribeToPush = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+    const { subscription } = req.body;
+
+    if (!userId || !subscription) {
+      res.status(400).json({ error: 'Nedostaju podaci za pretplatu.' });
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: 'Korisnik nije pronađen.' });
+      return;
+    }
+
+    if (!user.pushSubscriptions) {
+      user.pushSubscriptions = [];
+    }
+
+    // Proveravamo da li ovaj endpoint već postoji da izbegnemo duplikate
+    const existingSubIndex = user.pushSubscriptions.findIndex(
+      (sub: any) => sub.endpoint === subscription.endpoint
+    );
+
+    if (existingSubIndex === -1) {
+      user.pushSubscriptions.push(subscription);
+      await user.save();
+    }
+
+    res.status(201).json({ message: 'Uspešno pretplaćeno na Web Push notifikacije.' });
+  } catch (error) {
+    console.error('Greška pri pretplati:', error);
+    res.status(500).json({ error: 'Greška pri čuvanju pretplate na serveru.' });
+  }
+};

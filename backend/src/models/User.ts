@@ -22,6 +22,13 @@ export interface IUser extends Document {
   isVerified: boolean;
   otpCode?: string;
   otpExpiresAt?: Date;
+  pushSubscriptions?: Array<{
+    endpoint: string;
+    keys: {
+      p256dh: string;
+      auth: string;
+    };
+  }>;
 }
 
 const UserSchema: Schema = new Schema({
@@ -53,7 +60,14 @@ const UserSchema: Schema = new Schema({
   googleRefreshToken: { type: String },
   isVerified: { type: Boolean, default: false },
   otpCode: { type: String },
-  otpExpiresAt: { type: Date }
+  otpExpiresAt: { type: Date },
+  pushSubscriptions: [{
+    endpoint: String,
+    keys: {
+      p256dh: String,
+      auth: String
+    }
+  }]
 }, { timestamps: true });
 
 // Indeks za brzu proveru isteklih članarina za učenike

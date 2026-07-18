@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { NotificationDropdown } from '../ui/NotificationDropdown';
+import { PushNotificationManager } from '../ui/PushNotificationManager';
 
 export default function MainLayout() {
   const dispatch = useDispatch();
@@ -143,6 +144,7 @@ export default function MainLayout() {
           ))}
         </nav>
 
+        <PushNotificationManager />
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center mb-4 px-2">
             <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold mr-3">
