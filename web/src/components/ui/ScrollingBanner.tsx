@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGetSettingsQuery } from '../../store/apiSlice';
-import { Megaphone } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export function ScrollingBanner() {
@@ -12,13 +12,13 @@ export function ScrollingBanner() {
   if (activeBanners.length === 0) return null;
 
   return (
-    <div className="w-full bg-gradient-to-r from-orange-500 via-rose-500 to-orange-500 text-white shadow-lg overflow-hidden relative rounded-2xl mb-6">
-      <div className="absolute inset-0 bg-white/10" />
+    <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg overflow-hidden relative rounded-2xl mb-6 border border-indigo-400/20">
+      <div className="absolute inset-0 bg-white/5" />
       <div className="flex items-center">
         {/* Fiksni deo sa ikonicom */}
-        <div className="px-4 py-3 bg-rose-600/80 backdrop-blur-sm z-10 flex items-center gap-2 font-bold uppercase tracking-wider text-sm whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.1)] relative">
-          <Megaphone className="w-4 h-4 animate-pulse text-yellow-200" />
-          <span>Najnovije</span>
+        <div className="px-4 py-3 bg-indigo-900/80 backdrop-blur-sm z-10 flex items-center gap-2 font-bold uppercase tracking-wider text-sm whitespace-nowrap shadow-[10px_0_15px_-3px_rgba(0,0,0,0.2)] relative border-r border-indigo-400/20">
+          <Zap className="w-4 h-4 animate-pulse text-yellow-300" fill="currentColor" />
+          <span className="bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent">Aktuelno</span>
         </div>
         
         {/* Animacija Marquee */}
