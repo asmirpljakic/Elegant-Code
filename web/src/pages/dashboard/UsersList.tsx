@@ -14,6 +14,8 @@ import { Search, Plus, Filter, MoreVertical, Edit2, Shield, Trash2, Power, UserP
 import type { UserResponse } from '@elegant-code/shared';
 import { useDebounce } from '../../hooks/useDebounce';
 import { UserDetailsModal } from '../../components/users/UserDetailsModal';
+import { UserCreateModal } from '../../components/users/UserCreateModal';
+import { UserEditModal } from '../../components/users/UserEditModal';
 import type { RootState } from '../../store/store';
 
 export default function UsersList() {
@@ -56,23 +58,6 @@ export default function UsersList() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [certCourseName, setCertCourseName] = useState('');
-  
-  // Stanja forme za izmenu
-  const [editFirstName, setEditFirstName] = useState('');
-  const [editLastName, setEditLastName] = useState('');
-  const [editEmail, setEditEmail] = useState('');
-  const [editPhone, setEditPhone] = useState('');
-  const [editRole, setEditRole] = useState('');
-  const [editPackage, setEditPackage] = useState('');
-
-  // Stanja forme za kreiranje
-  const [createFirstName, setCreateFirstName] = useState('');
-  const [createLastName, setCreateLastName] = useState('');
-  const [createEmail, setCreateEmail] = useState('');
-  const [createPassword, setCreatePassword] = useState('');
-  const [createPhone, setCreatePhone] = useState('');
-  const [createRole, setCreateRole] = useState('UCENIK');
-  const [createPackage, setCreatePackage] = useState('NONE');
 
   // Resetujemo paginaciju na 1. stranicu ukoliko korisnik menja filtere/pretragu
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,94 +77,6 @@ export default function UsersList() {
 
   const handleEditClick = (user: UserResponse) => {
     setEditingUser(user);
-    setEditFirstName(user.firstName);
-    setEditLastName(user.lastName);
-    setEditEmail(user.email);
-    setEditPhone(user.phoneNumber || '');
-    setEditRole(user.role);
-    setEditPackage(user.activePackage);
-  };
-
-  const handleSave = async () => {
-    if (!editingUser) return;
-    try {
-      const payload: any = {
-        firstName: editFirstName,
-        lastName: editLastName,
-        email: editEmail,
-        phoneNumber: editPhone,
-      };
-
-      // Ako NIJE profesor, dozvoli mu da menja ulogu i paket
-      if (currentUser?.role !== 'PROFESOR') {
-        payload.role = editRole;
-        payload.activePackage = editPackage;
-      }
-
-      await updateUser({
-        id: editingUser._id,
-        data: payload
-      }).unwrap();
-      
-      setEditingUser(null);
-    } catch (err: any) {
-      console.error('Failed to update user', err);
-      let errorMessage = 'Greška pri čuvanju promena.';
-      
-      if (err.data?.error) {
-        if (Array.isArray(err.data.error)) {
-          errorMessage = err.data.error.map((e: any) => e.message).join('\n');
-        } else if (typeof err.data.error === 'string') {
-          errorMessage = err.data.error;
-        }
-      }
-      
-      alert(errorMessage);
-    }
-  };
-
-  const handleCreate = async () => {
-    try {
-      const payload: any = {
-        firstName: createFirstName,
-        lastName: createLastName,
-        email: createEmail,
-        password: createPassword,
-        phoneNumber: createPhone,
-      };
-
-      // Ako NIJE profesor, dozvoli mu da postavi ulogu i paket
-      if (currentUser?.role !== 'PROFESOR') {
-        payload.role = createRole;
-        payload.activePackage = createPackage;
-      }
-
-      await createUser(payload).unwrap();
-      
-      // Reset forme
-      setCreateFirstName('');
-      setCreateLastName('');
-      setCreateEmail('');
-      setCreatePassword('');
-      setCreatePhone('');
-      setCreateRole('UCENIK');
-      setCreatePackage('NONE');
-      
-      setIsCreateModalOpen(false);
-    } catch (err: any) {
-      console.error('Failed to create user', err);
-      let errorMessage = 'Greška pri kreiranju korisnika.';
-      
-      if (err.data?.error) {
-        if (Array.isArray(err.data.error)) {
-          errorMessage = err.data.error.map((e: any) => e.message).join('\n');
-        } else if (typeof err.data.error === 'string') {
-          errorMessage = err.data.error;
-        }
-      }
-      
-      alert(errorMessage);
-    }
   };
 
   const handleDelete = async (user: UserResponse) => {
@@ -521,219 +418,15 @@ export default function UsersList() {
         )}
       </div>
 
-      {/* Edit Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center p-6 border-b border-slate-800 shrink-0">
-              <h3 className="text-xl font-bold text-white">Izmeni Korisnika</h3>
-              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-white transition-colors">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6 overflow-y-auto">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Ime</label>
-                  <input 
-                    type="text"
-                    value={editFirstName} 
-                    onChange={(e) => setEditFirstName(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Prezime</label>
-                  <input 
-                    type="text"
-                    value={editLastName} 
-                    onChange={(e) => setEditLastName(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                  <input 
-                    type="email"
-                    value={editEmail} 
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Broj Telefona</label>
-                  <input 
-                    type="text"
-                    value={editPhone} 
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    placeholder="Npr. +381601234567"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              </div>
+      <UserEditModal 
+        user={editingUser} 
+        onClose={() => setEditingUser(null)} 
+      />
 
-              {currentUser?.role !== 'PROFESOR' && (
-                <div className="space-y-4 pt-4 border-t border-slate-800">
-                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Podešavanja Naloga (Samo Admin)</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Uloga (Role)</label>
-                      <select 
-                        value={editRole} 
-                        onChange={(e) => setEditRole(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="UCENIK">UČENIK</option>
-                        <option value="PROFESOR">PROFESOR</option>
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="SUPER_ADMIN">SUPER ADMIN</option>
-                        <option value="KLIJENT">KLIJENT</option>
-                        <option value="GOST">GOST</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Aktivni Paket</label>
-                      <select 
-                        value={editPackage} 
-                        onChange={(e) => setEditPackage(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="NONE">Bez Paketa (NONE)</option>
-                        <option value="OSNOVNI">OSNOVNI PAKET</option>
-                        <option value="SREDNJI">SREDNJI PAKET</option>
-                        <option value="NAPREDNI">NAPREDNI PAKET</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <Button 
-                onClick={handleSave} 
-                isLoading={isUpdating}
-                className="w-full py-4 mt-4"
-              >
-                Sačuvaj Izmene
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Modal */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center p-6 border-b border-slate-800 shrink-0">
-              <h3 className="text-xl font-bold text-white">Dodaj Novog Korisnika</h3>
-              <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6 overflow-y-auto">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Ime</label>
-                  <input 
-                    type="text"
-                    value={createFirstName} 
-                    onChange={(e) => setCreateFirstName(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Prezime</label>
-                  <input 
-                    type="text"
-                    value={createLastName} 
-                    onChange={(e) => setCreateLastName(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                  <input 
-                    type="email"
-                    value={createEmail} 
-                    onChange={(e) => setCreateEmail(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Lozinka</label>
-                  <input 
-                    type="text"
-                    value={createPassword} 
-                    onChange={(e) => setCreatePassword(e.target.value)}
-                    placeholder="Minimalno 6 karaktera"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Broj Telefona</label>
-                  <input 
-                    type="text"
-                    value={createPhone} 
-                    onChange={(e) => setCreatePhone(e.target.value)}
-                    placeholder="Npr. +381601234567"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              </div>
-
-              {currentUser?.role !== 'PROFESOR' && (
-                <div className="space-y-4 pt-4 border-t border-slate-800">
-                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Podešavanja Naloga (Samo Admin)</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Uloga (Role)</label>
-                      <select 
-                        value={createRole} 
-                        onChange={(e) => setCreateRole(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="UCENIK">UČENIK</option>
-                        <option value="PROFESOR">PROFESOR</option>
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="SUPER_ADMIN">SUPER ADMIN</option>
-                        <option value="KLIJENT">KLIJENT</option>
-                        <option value="GOST">GOST</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Aktivni Paket</label>
-                      <select 
-                        value={createPackage} 
-                        onChange={(e) => setCreatePackage(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="NONE">Bez Paketa (NONE)</option>
-                        <option value="OSNOVNI">OSNOVNI PAKET</option>
-                        <option value="SREDNJI">SREDNJI PAKET</option>
-                        <option value="NAPREDNI">NAPREDNI PAKET</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <Button 
-                onClick={handleCreate} 
-                isLoading={isCreating}
-                className="w-full py-4 mt-4"
-              >
-                Kreiraj Korisnika
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <UserCreateModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
 
       {/* Details Modal */}
       {isDetailsModalOpen && selectedUser && (

@@ -41,7 +41,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['User', 'Users', 'ClassSession', 'Settings', 'Notifications', 'Certificates'],
+  tagTypes: ['User', 'Users', 'ClassSession', 'Settings', 'Notifications', 'Certificates', 'Analytics'],
   endpoints: (builder) => ({
     login: builder.mutation<{ token: string; user: any }, LoginFormData>({
       query: (credentials) => ({
@@ -167,7 +167,7 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: ['ClassSession'],
+      invalidatesTags: ['ClassSession', 'Analytics'],
     }),
     deleteClass: builder.mutation<void, { id: string, all?: boolean }>({
       query: ({ id, all }) => ({
@@ -189,7 +189,7 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: { presentStudentIds },
       }),
-      invalidatesTags: ['ClassSession', 'User', 'Users'], // Update korisnika zbog XP poena
+      invalidatesTags: ['ClassSession', 'User', 'Users', 'Analytics'], // Update korisnika zbog XP poena i Analitike
     }),
     cancelClass: builder.mutation<void, { id: string, reason?: string }>({
       query: ({ id, reason }) => ({
@@ -201,7 +201,7 @@ export const apiSlice = createApi({
     }),
     getAnalytics: builder.query<any, void>({
       query: () => '/analytics',
-      providesTags: ['ClassSession', 'Users'],
+      providesTags: ['ClassSession', 'Users', 'Analytics'],
     }),
     getNotifications: builder.query<{ notifications: any[], total: number }, { limit?: number } | void>({
       query: (params) => ({
