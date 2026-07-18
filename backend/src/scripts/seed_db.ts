@@ -17,9 +17,9 @@ const seedDB = async () => {
     await ActivityLog.deleteMany({});
     console.log('Obrisani svi časovi i logovi.');
 
-    // Zadrži samo asmir@gmail.com
-    await User.deleteMany({ email: { $ne: 'asmir@gmail.com' } });
-    console.log('Obrisani svi korisnici osim asmir@gmail.com.');
+    // Zadrži samo elegantcodegroup@gmail.com
+    await User.deleteMany({ email: { $ne: 'elegantcodegroup@gmail.com' } });
+    console.log('Obrisani svi korisnici osim elegantcodegroup@gmail.com.');
 
     // Kreiraj 10 učenika
     const hashedPassword = await bcrypt.hash('Sifra123!', 10);
