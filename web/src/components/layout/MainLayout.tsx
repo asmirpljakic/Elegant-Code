@@ -112,7 +112,7 @@ export default function MainLayout() {
       )}>
         <div className="h-16 flex flex-shrink-0 items-center px-6 border-b border-slate-800 justify-between md:justify-start">
           <div className="flex items-center">
-            <Code2 className="w-6 h-6 text-primary mr-2" />
+            <img src="/logo.svg" alt="Elegant Code Logo" className="w-8 h-8 mr-2 object-contain" />
             <span className="text-lg font-bold text-white tracking-tight">Elegant Code</span>
           </div>
           <button 

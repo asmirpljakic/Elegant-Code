@@ -36,8 +36,8 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 ring-1 ring-primary/50 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
-            <Code2 className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 border border-primary/20 shadow-[0_0_15px_rgba(0,212,146,0.2)]">
+            <img src="/logo.svg" alt="Elegant Code Logo" className="w-10 h-10 object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">Napravi nalog</h1>
           <p className="text-slate-400 mt-2 text-sm">Pridruži se platformi Elegant Code</p>
