@@ -8,6 +8,7 @@ export interface ISettings extends mongoose.Document {
     NAPREDNI: number;
   };
   googleRefreshToken?: string;
+  maintenanceMode: boolean;
   banners: Array<{
     text: string;
     isActive: boolean;
@@ -32,6 +33,10 @@ const settingsSchema = new mongoose.Schema(
     googleRefreshToken: {
       type: String,
       default: null
+    },
+    maintenanceMode: {
+      type: Boolean,
+      default: false
     },
     banners: [
       {

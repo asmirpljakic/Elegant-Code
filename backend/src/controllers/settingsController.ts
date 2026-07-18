@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Settings } from '../models/Settings';
+import { getIO } from '../socket';
 
 // Helper da uvek imamo bar jedan settings dokument
 const getOrCreateSettings = async () => {
@@ -11,7 +12,8 @@ const getOrCreateSettings = async () => {
         OSNOVNI: 100,
         SREDNJI: 150,
         NAPREDNI: 200
-      }
+      },
+      maintenanceMode: false
     });
   }
   return settings;
@@ -34,7 +36,7 @@ export const getSettings = async (req: Request, res: Response): Promise<void> =>
 // @access  Private/Admin, SuperAdmin
 export const updateSettings = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { professorClassFee, packagePrices, banners } = req.body;
+    const { professorClassFee, packagePrices, banners, maintenanceMode } = req.body;
     
     // Provera permisija se radi u middleware-u, ali duplo je bezbednije
     if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
@@ -44,6 +46,8 @@ export const updateSettings = async (req: Request, res: Response): Promise<void>
 
     const settings = await getOrCreateSettings();
     
+    let maintenanceToggled = false;
+
     if (professorClassFee !== undefined) {
       settings.professorClassFee = professorClassFee;
     }
@@ -57,11 +61,35 @@ export const updateSettings = async (req: Request, res: Response): Promise<void>
     if (banners !== undefined) {
       settings.banners = banners;
     }
+
+    if (maintenanceMode !== undefined) {
+      if (settings.maintenanceMode !== maintenanceMode) {
+        maintenanceToggled = true;
+      }
+      settings.maintenanceMode = maintenanceMode;
+    }
     
     await settings.save();
+
+    if (maintenanceToggled) {
+      const io = getIO();
+      io.emit('maintenance_changed', { isMaintenance: settings.maintenanceMode });
+    }
     
     res.json({ message: 'Podešavanja su uspešno ažurirana', settings });
   } catch (error) {
     res.status(500).json({ error: 'Greška pri ažuriranju podešavanja' });
+  }
+};
+
+// @desc    Dohvati javna podešavanja (samo Maintenance status)
+// @route   GET /api/settings/public
+// @access  Public
+export const getPublicSettings = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const settings = await getOrCreateSettings();
+    res.json({ maintenanceMode: settings.maintenanceMode || false });
+  } catch (error) {
+    res.status(500).json({ error: 'Greška pri dohvatanju javnih podešavanja' });
   }
 };

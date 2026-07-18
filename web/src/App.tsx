@@ -14,13 +14,20 @@ import Certificates from './pages/dashboard/Certificates';
 import GoogleMeet from './pages/dashboard/GoogleMeet';
 import MakeupSchedule from './pages/dashboard/MakeupSchedule';
 import SystemNotifications from './pages/dashboard/SystemNotifications';
+import MaintenancePage from './pages/MaintenancePage';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getSocket } from './lib/socket';
-import { apiSlice } from './store/apiSlice';
+import { apiSlice, useGetPublicSettingsQuery } from './store/apiSlice';
+import type { RootState } from './store/store';
 
 function App() {
   const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
+  
+  const { data: publicSettings, isLoading: isSettingsLoading } = useGetPublicSettingsQuery();
+  const isMaintenanceMode = publicSettings?.maintenanceMode;
+  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
 
   useEffect(() => {
     const socket = getSocket();
@@ -64,91 +71,113 @@ function App() {
       playNotificationSound();
     });
 
+    socket.on('maintenance_changed', (data: { isMaintenance: boolean }) => {
+      console.log('Mod održavanja promenjen:', data.isMaintenance);
+      dispatch(apiSlice.util.invalidateTags(['Settings']));
+    });
+
     return () => {
       socket.off('users_updated');
       socket.off('new_notification');
+      socket.off('maintenance_changed');
     };
   }, [dispatch]);
+
+  if (isSettingsLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
-        
-        {/* Zaštićene Rute */}
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* Default dashboard stranica */}
-          <Route index element={<DashboardIndex />} />
+      {isMaintenanceMode && !isAdmin ? (
+        <Routes>
+          {/* U Maintenance modu, sve rute vode na MaintenancePage, osim Login-a koji je tu da bi admin mogao da udje */}
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<MaintenancePage />} />
+        </Routes>
+      ) : (
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
           
-          {/* Ostale stranice unutar Layout-a */}
-          <Route path="schedule" element={<Schedule />} />
+          {/* Zaštićene Rute */}
           <Route 
-            path="makeup-schedule" 
+            path="/dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
-                <MakeupSchedule />
+              <ProtectedRoute>
+                <MainLayout />
               </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="users" 
-            element={
-              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
-                <UsersList />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="google-meet" 
-            element={
-              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
-                <GoogleMeet />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="analytics" element={
-            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
-              <Analytics />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="banners" element={
-            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
-              <Banners />
-            </ProtectedRoute>
-          } />
-          <Route path="system-notifications" element={
-            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
-              <SystemNotifications />
-            </ProtectedRoute>
-          } />
-          <Route 
-            path="settings" 
-            element={
+            }
+          >
+            {/* Default dashboard stranica */}
+            <Route index element={<DashboardIndex />} />
+            
+            {/* Ostale stranice unutar Layout-a */}
+            <Route path="schedule" element={<Schedule />} />
+            <Route 
+              path="makeup-schedule" 
+              element={
+                <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
+                  <MakeupSchedule />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="users" 
+              element={
+                <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
+                  <UsersList />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="google-meet" 
+              element={
+                <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PROFESOR']}>
+                  <GoogleMeet />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="certificates" 
+              element={
+                <ProtectedRoute allowedRoles={['UCENIK', 'KLIJENT']}>
+                  <Certificates />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="analytics" element={
               <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
-                <Settings />
+                <Analytics />
               </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="certificates" 
-            element={
-              <ProtectedRoute allowedRoles={['UCENIK', 'KLIJENT']}>
-                <Certificates />
+            } />
+            <Route path="banners" element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+                <Banners />
               </ProtectedRoute>
-            } 
-          />
-        </Route>
-      </Routes>
+            } />
+            <Route path="system-notifications" element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+                <SystemNotifications />
+              </ProtectedRoute>
+            } />
+            <Route 
+              path="settings" 
+              element={
+                <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+                  <Settings />
+                </ProtectedRoute>
+              } 
+            />
+          </Route>
+        </Routes>
+      )}
     </BrowserRouter>
   );
 }

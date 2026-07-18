@@ -236,6 +236,10 @@ export const apiSlice = createApi({
       query: () => '/settings',
       providesTags: ['Settings'],
     }),
+    getPublicSettings: builder.query<{ maintenanceMode: boolean }, void>({
+      query: () => '/settings/public',
+      providesTags: ['Settings'],
+    }),
     updateSettings: builder.mutation<any, any>({
       query: (data) => ({
         url: '/settings',
@@ -286,6 +290,7 @@ export const {
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
   useGetSettingsQuery,
+  useGetPublicSettingsQuery,
   useUpdateSettingsMutation,
   useBroadcastNotificationMutation,
   useGetMeQuery,

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useGetSettingsQuery, useUpdateSettingsMutation } from '../../store/apiSlice';
 import type { RootState } from '../../store/store';
 import { Button } from '../../components/ui/Button';
-import { Loader2, Settings as SettingsIcon, DollarSign, Package, Save } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, DollarSign, Package, Save, ShieldAlert, Power, Wrench } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -19,6 +19,7 @@ export default function Settings() {
   const [pkgOsnovni, setPkgOsnovni] = useState(100);
   const [pkgSrednji, setPkgSrednji] = useState(150);
   const [pkgNapredni, setPkgNapredni] = useState(200);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
   // Inicijalizacija forme kad stignu podaci
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function Settings() {
       setPkgOsnovni(settings.packagePrices?.OSNOVNI || 100);
       setPkgSrednji(settings.packagePrices?.SREDNJI || 150);
       setPkgNapredni(settings.packagePrices?.NAPREDNI || 200);
+      setMaintenanceMode(settings.maintenanceMode || false);
     }
   }, [settings]);
 
@@ -52,7 +54,8 @@ export default function Settings() {
           OSNOVNI: Number(pkgOsnovni),
           SREDNJI: Number(pkgSrednji),
           NAPREDNI: Number(pkgNapredni)
-        }
+        },
+        maintenanceMode
       }).unwrap();
       alert('Podešavanja su uspešno sačuvana! Dashboard analitika je ažurirana.');
     } catch (err) {
@@ -70,6 +73,47 @@ export default function Settings() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
+        
+        {/* Mod Održavanja */}
+        <div className={`border rounded-3xl p-8 relative overflow-hidden transition-colors ${maintenanceMode ? 'bg-amber-500/10 border-amber-500/50' : 'bg-slate-900 border-slate-800'}`}>
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Wrench className={`w-40 h-40 ${maintenanceMode ? 'text-amber-500' : 'text-slate-500'}`} />
+          </div>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+            <div>
+              <h3 className={`text-xl font-bold mb-2 flex items-center gap-2 ${maintenanceMode ? 'text-amber-400' : 'text-white'}`}>
+                <ShieldAlert className="w-5 h-5" /> Mod Održavanja (Maintenance Mode)
+              </h3>
+              <p className="text-sm text-slate-400 max-w-xl">
+                Kada je ovaj mod uključen, aplikacija će biti **potpuno blokirana** za sve korisnike (učenike), 
+                sa porukom da je sistem u fazi ažuriranja. Vi kao Admin ćete i dalje moći normalno da pristupate.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setMaintenanceMode(!maintenanceMode)}
+              className={`relative inline-flex h-10 w-20 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${maintenanceMode ? 'bg-amber-500' : 'bg-slate-700'}`}
+            >
+              <span className="sr-only">Uključi mod održavanja</span>
+              <span
+                className={`pointer-events-none inline-block h-9 w-9 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center ${maintenanceMode ? 'translate-x-10' : 'translate-x-0'}`}
+              >
+                <Power className={`w-4 h-4 ${maintenanceMode ? 'text-amber-500' : 'text-slate-400'}`} />
+              </span>
+            </button>
+          </div>
+          
+          {maintenanceMode && (
+            <div className="mt-4 p-4 bg-amber-500/20 border border-amber-500/30 rounded-xl relative z-10 animate-in fade-in slide-in-from-top-2">
+              <p className="text-sm font-medium text-amber-200 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                Upozorenje: Čuvanjem ovih podešavanja, svi učenici će trenutno biti izbačeni sa platforme.
+              </p>
+            </div>
+          )}
+        </div>
         
         {/* Zarada Profesora */}
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 relative overflow-hidden">
