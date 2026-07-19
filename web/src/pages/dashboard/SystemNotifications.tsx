@@ -117,8 +117,8 @@ export default function SystemNotifications() {
                   });
                   const data = await res.json();
                   alert(data.message || data.error);
-                } catch (e) {
-                  alert('Greska pri testiranju');
+                } catch (e: any) {
+                  alert('Greska pri testiranju: ' + (e.message || e.toString()));
                 }
               }}
             >
